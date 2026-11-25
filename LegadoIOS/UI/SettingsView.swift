@@ -16,6 +16,19 @@ struct SettingsView: View {
         NavigationStack {
             Form {
                 Section {
+                    Picker("外观", selection: Binding(
+                        get: { model.appearance },
+                        set: { model.setAppearance($0) })) {
+                        Text("跟随系统").tag(0)
+                        Text("浅色").tag(1)
+                        Text("深色").tag(2)
+                    }
+                    .pickerStyle(.segmented)
+                } header: {
+                    Text("外观")
+                }
+
+                Section {
                     NavigationLink {
                         ReaderSettingsView()
                     } label: {

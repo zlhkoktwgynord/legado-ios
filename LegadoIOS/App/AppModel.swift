@@ -11,6 +11,8 @@ final class AppModel: ObservableObject {
     @Published var recentKeywords: [String] = []
     @Published var replaceRules: [ReplaceRule] = []
     @Published var bookmarks: [Bookmark] = []
+    /// 0 跟随系统 1 浅色 2 深色
+    @Published var appearance: Int = UserDefaults.standard.integer(forKey: "appearance")
 
     private let sourcesFile = "sources.json"
     private let booksFile = "books.json"
@@ -44,6 +46,11 @@ final class AppModel: ObservableObject {
 
     func saveBooks() {
         Storage.saveJSON(books, booksFile)
+    }
+
+    func setAppearance(_ value: Int) {
+        appearance = value
+        UserDefaults.standard.set(value, forKey: "appearance")
     }
 
     func saveReaderConfig() {
@@ -122,6 +129,46 @@ final class AppModel: ObservableObject {
     func bookmarks(for book: Book) -> [Bookmark] {
         bookmarks.filter { $0.bookUrl == book.bookUrl }
             .sorted { $0.chapterIndex < $1.chapterIndex }
+    }
+
+    // MARK: - 换源
+
+    /// 用另一个书源的同名书替换，保留阅读进度（按章节标题对齐）
+    func switchSource(book: Book,
+                      to searchBook: SearchBook,
+                      source: BookSource) async throws -> Book {
+        var updated = searchBook.toBook()
+        updated.durChapterIndex = book.durChapterIndex
+        updated.durChapterTitle = book.durChapterTitle
+        updated.durChapterTime = book.durChapterTime
+        updated.canUpdate = true
+        if !isOnShelf(book.bookUrl) {
+            books.insert(updated, at: 0)
+            saveBooks()
+            return updated
+        }
+        // 拉新目录，按标题对齐章节
+        let chapters = try await SourceEngine(source: source).loadToc(updated)
+        Storage.saveChapters(chapters, bookUrl: updated.bookUrl)
+        if let title = book.durChapterTitle,
+           let match = chapters.first(where: { $0.title == title }) {
+            updated.durChapterIndex = match.index
+        } else {
+            updated.durChapterIndex = min(book.durChapterIndex, max(0, chapters.count - 1))
+        }
+        updated.totalChapterNum = chapters.count
+        updated.latestChapterTitle = chapters.last?.title
+        updated.durChapterTitle = chapters.indices.contains(updated.durChapterIndex)
+            ? chapters[updated.durChapterIndex].title : updated.durChapterTitle
+
+        if let index = books.firstIndex(where: { $0.bookUrl == book.bookUrl }) {
+            books[index] = updated
+        } else {
+            books.insert(updated, at: 0)
+        }
+        saveBooks()
+        // 旧源缓存没用了，清掉
+        return updated
     }
 
     // MARK: - 备份 / 恢复

@@ -1,20 +1,25 @@
 import SwiftUI
 
+/// 阅读器：仿「阅读」原版的翻页阅读
 struct ReaderView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
 
     let book: Book
+
     @State private var currentIndex: Int
     @State private var chapters: [BookChapter] = []
     @State private var content: String = ""
+    @State private var attributed: NSAttributedString?
+    @State private var pages: [NSRange] = []
+    @State private var pageIndex: Int = 0
     @State private var loading = false
     @State private var error: String?
-    @State private var showToolbar = true
+    @State private var showChrome = true
     @State private var showChapterList = false
     @State private var showSettings = false
-    @State private var showBookmarks = false
-    @State private var speaking = false
+    @State private var jumpToLastPage = false
+    @State private var pageSize: CGSize = .zero
 
     init(book: Book, startIndex: Int) {
         self.book = book
@@ -23,60 +28,41 @@ struct ReaderView: View {
 
     private var theme: ReaderTheme { model.readerConfig.theme }
     private var config: ReaderConfig { model.readerConfig }
+    private var textColor: Color { Color(hex: theme.textHex) }
 
     var body: some View {
-        ZStack {
-            Color(hex: theme.backgroundHex).ignoresSafeArea()
+        GeometryReader { geo in
+            let width = max(120, geo.size.width - CGFloat(config.padding) * 2)
+            let height = max(160, geo.size.height - 128)
 
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 0) {
-                        Color.clear.frame(height: 1).id("top")
-                        if loading && content.isEmpty {
-                            LoadingRow().padding(.top, 40)
-                        } else if let error = error, content.isEmpty {
-                            errorView(error)
-                        } else {
-                            chapterBody
-                        }
-                        footer
-                    }
-                    .padding(.horizontal, CGFloat(config.padding))
-                    .padding(.top, 12)
-                    .padding(.bottom, 120)
+            ZStack {
+                Color(hex: theme.backgroundHex).ignoresSafeArea()
+
+                pageLayer
+                    .frame(width: width, height: height)
+                    .position(x: geo.size.width / 2, y: geo.size.height / 2)
+                    .gesture(tapGesture(width: width))
+                    .simultaneousGesture(swipeGesture)
+
+                if showChrome {
+                    chrome
                 }
-                .onChange(of: currentIndex) { _ in
-                    proxy.scrollTo("top", anchor: .top)
-                }
-                .onTapGesture {
-                    withAnimation(.easeInOut(duration: 0.2)) { showToolbar.toggle() }
-                }
-                .simultaneousGesture(
-                    DragGesture(minimumDistance: 40)
-                        .onEnded { value in
-                            let dx = value.translation.width
-                            let dy = value.translation.height
-                            guard abs(dx) > 70, abs(dx) > abs(dy) * 1.5 else { return }
-                            if dx < 0 {
-                                load(index: currentIndex + 1)
-                            } else {
-                                load(index: currentIndex - 1)
-                            }
-                        }
-                )
             }
-
-            if showToolbar {
-                overlays
+            .onAppear {
+                pageSize = CGSize(width: width, height: height)
+                prepare()
+            }
+            .onChange(of: width) { newValue in
+                pageSize = CGSize(width: newValue, height: height)
+                rebuild()
+            }
+            .onChange(of: config) { _ in
+                rebuild()
             }
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
-        .onAppear { prepare() }
-        .onDisappear {
-            saveProgress()
-            SpeechManager.shared.stop()
-        }
+        .onDisappear { saveProgress() }
         .sheet(isPresented: $showChapterList) {
             ChapterPickerView(chapters: chapters, currentIndex: currentIndex) { index in
                 showChapterList = false
@@ -86,127 +72,59 @@ struct ReaderView: View {
         .sheet(isPresented: $showSettings) {
             ReaderSettingsView()
         }
-        .sheet(isPresented: $showBookmarks) {
-            BookmarksView(book: book) { index in
-                showBookmarks = false
-                load(index: index)
+    }
+
+    // MARK: - 页面
+
+    @ViewBuilder
+    private var pageLayer: some View {
+        if loading && content.isEmpty {
+            ProgressView()
+        } else if let error = error, content.isEmpty {
+            VStack(spacing: 12) {
+                ErrorBanner(message: error)
+                Button("重试") { loadContent(index: currentIndex) }
             }
+            .padding()
+        } else if let attributed = attributed, pages.indices.contains(pageIndex) {
+            PageTextView(attributed: attributed, range: pages[pageIndex])
+        } else {
+            Color.clear
         }
     }
 
-    // MARK: - 正文
-
-    private var chapterBody: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text(chapterTitle)
-                .font(titleFont)
-                .foregroundColor(Color(hex: theme.textHex))
-                .padding(.bottom, 14)
-
-            if let error = error, !content.isEmpty {
-                ErrorBanner(message: error).padding(.bottom, 10)
-            }
-
-            LazyVStack(alignment: .leading, spacing: CGFloat(config.paragraphSpacing)) {
-                ForEach(paragraphs.indices, id: \.self) { index in
-                    Text(paragraphs[index])
-                        .font(bodyFont)
-                        .tracking(CGFloat(config.letterSpacing))
-                        .lineSpacing(CGFloat(config.lineSpacing))
-                        .foregroundColor(Color(hex: theme.textHex))
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textSelection(.enabled)
+    private func tapGesture(width: CGFloat) -> some Gesture {
+        SpatialTapGesture()
+            .onEnded { value in
+                let x = value.location.x
+                if x < width * 0.32 {
+                    previousPage()
+                } else if x > width * 0.68 {
+                    nextPage()
+                } else {
+                    withAnimation(.easeInOut(duration: 0.18)) { showChrome.toggle() }
                 }
             }
-        }
     }
 
-    /// 应用替换净化后的正文
-    private var processedContent: String {
-        let rules = model.replaceRules.filter { $0.enabled }
-        guard !rules.isEmpty else { return content }
-        return TextCleaner.applyReplaceRules(content, rules: rules)
-    }
-
-    private var bodyFont: Font {
-        if config.fontFamily.isEmpty {
-            return .system(size: CGFloat(config.fontSize))
-        }
-        return .custom(config.fontFamily, size: CGFloat(config.fontSize))
-    }
-
-    private var titleFont: Font {
-        if config.fontFamily.isEmpty {
-            return .system(size: CGFloat(config.fontSize) + 3, weight: .semibold)
-        }
-        return .custom(config.fontFamily, size: CGFloat(config.fontSize) + 3)
-    }
-
-    private var paragraphs: [String] {
-        processedContent
-            .components(separatedBy: "\n")
-            .map { $0.trimmingCharacters(in: .whitespaces) }
-            .filter { !$0.isEmpty }
-            .map { line in
-                if config.indent && !line.hasPrefix("　　") {
-                    return "　　" + line
-                }
-                return line
+    private var swipeGesture: some Gesture {
+        DragGesture(minimumDistance: 30)
+            .onEnded { value in
+                let dx = value.translation.width
+                guard abs(dx) > 50, abs(dx) > abs(value.translation.height) else { return }
+                if dx < 0 { nextPage() } else { previousPage() }
             }
     }
 
-    private var chapterTitle: String {
-        if chapters.indices.contains(currentIndex) { return chapters[currentIndex].title }
-        return book.durChapterTitle ?? book.name
-    }
+    // MARK: - 顶部 / 底部
 
-    private var footer: some View {
-        VStack(spacing: 14) {
-            if loading && !content.isEmpty {
-                ProgressView()
-            }
-            HStack(spacing: 12) {
-                Button {
-                    load(index: currentIndex - 1)
-                } label: {
-                    Text("上一章").frame(maxWidth: .infinity)
-                }
-                .disabled(currentIndex <= 0)
-
-                Button {
-                    load(index: currentIndex + 1)
-                } label: {
-                    Text("下一章").frame(maxWidth: .infinity)
-                }
-                .disabled(currentIndex >= chapters.count - 1)
-            }
-            .font(.footnote)
-            .buttonStyle(.bordered)
-            .padding(.top, 20)
-
-            Text("第 \(currentIndex + 1) / \(max(chapters.count, 1)) 章")
-                .font(.caption2)
-                .foregroundColor(Color(hex: theme.textHex).opacity(0.5))
-                .padding(.top, 4)
-        }
-    }
-
-    private func errorView(_ message: String) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            ErrorBanner(message: message)
-            Button("重试") { loadContent(index: currentIndex, force: true) }
-        }
-        .padding(.top, 30)
-    }
-
-    // MARK: - 覆盖层
-
-    private var overlays: some View {
+    private var chrome: some View {
         VStack {
             topBar
             Spacer()
             bottomBar
         }
+        .transition(.opacity)
     }
 
     private var topBar: some View {
@@ -219,7 +137,9 @@ struct ReaderView: View {
                     .font(.system(size: 17, weight: .semibold))
             }
             VStack(alignment: .leading, spacing: 2) {
-                Text(book.name).font(.footnote).lineLimit(1)
+                Text(book.name)
+                    .font(.footnote)
+                    .lineLimit(1)
                 Text(chapterTitle)
                     .font(.caption2)
                     .foregroundColor(.secondary)
@@ -230,79 +150,140 @@ struct ReaderView: View {
                 showChapterList = true
             } label: {
                 Image(systemName: "list.bullet")
+                    .font(.system(size: 16))
             }
         }
-        .foregroundColor(.primary)
+        .foregroundColor(textColor)
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
-        .background(.ultraThinMaterial)
-        .overlay(alignment: .bottom) { Divider() }
-        .transition(.move(edge: .top).combined(with: .opacity))
+        .padding(.top, 8)
+        .padding(.bottom, 10)
+        .background(Color(hex: theme.backgroundHex).opacity(0.96))
+        .overlay(alignment: .bottom) {
+            Divider().opacity(0.3)
+        }
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 0) {
-            Divider()
+        VStack(spacing: 8) {
             HStack {
-                barButton(icon: "list.bullet.rectangle", title: "目录") {
-                    showChapterList = true
-                }
-                barButton(icon: speaking ? "speaker.wave.2.fill" : "speaker.wave.2", title: "朗读") {
-                    toggleSpeech()
-                }
-                barButton(icon: isCurrentBookmarked ? "bookmark.fill" : "bookmark",
-                          title: "书签") {
-                    toggleBookmark()
-                }
-                barButton(icon: "textformat.size", title: "排版") {
-                    showSettings = true
-                }
+                Text("第 \(currentIndex + 1)/\(max(chapters.count, 1)) 章")
+                Spacer()
+                Text(pages.isEmpty ? "" : "第 \(pageIndex + 1)/\(pages.count) 页")
+                Spacer()
+                Text(progressText)
             }
-            .padding(.vertical, 8)
-            .background(.ultraThinMaterial)
+            .font(.caption2)
+            .foregroundColor(textColor.opacity(0.65))
+
+            Slider(value: chapterBinding, in: 0...Double(max(chapters.count - 1, 1)), step: 1)
+                .tint(textColor.opacity(0.8))
+
+            HStack(spacing: 0) {
+                barButton("目录", "list.bullet.rectangle") { showChapterList = true }
+                barButton("上一章", "chevron.left.to.line") {
+                    load(index: currentIndex - 1)
+                }
+                barButton(theme.isDark ? "日间" : "夜间",
+                          theme.isDark ? "sun.max" : "moon") {
+                    model.readerConfig.theme = theme.isDark ? .paper : .dark
+                    model.saveReaderConfig()
+                }
+                barButton("下一章", "chevron.right.to.line") {
+                    load(index: currentIndex + 1)
+                }
+                barButton("设置", "textformat.size") { showSettings = true }
+            }
         }
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        .padding(.horizontal, 16)
+        .padding(.top, 10)
+        .padding(.bottom, 18)
+        .background(Color(hex: theme.backgroundHex).opacity(0.96))
+        .overlay(alignment: .top) { Divider().opacity(0.3) }
     }
 
-    private func barButton(icon: String, title: String, action: @escaping () -> Void) -> some View {
+    private func barButton(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 17))
-                Text(title).font(.caption2)
+                Image(systemName: icon).font(.system(size: 16))
+                Text(title).font(.system(size: 10))
             }
             .frame(maxWidth: .infinity)
-            .foregroundColor(.primary)
+            .foregroundColor(textColor)
         }
     }
 
-    private var currentChapter: BookChapter? {
-        chapters.indices.contains(currentIndex) ? chapters[currentIndex] : nil
+    private var chapterBinding: Binding<Double> {
+        Binding(
+            get: { Double(currentIndex) },
+            set: { value in
+                let index = Int(value.rounded())
+                if index != currentIndex { load(index: index) }
+            })
     }
 
-    private var isCurrentBookmarked: Bool {
-        guard let chapter = currentChapter else { return false }
-        return model.isBookmarked(book: book, chapter: chapter)
+    private var chapterTitle: String {
+        if chapters.indices.contains(currentIndex) { return chapters[currentIndex].title }
+        return book.durChapterTitle ?? book.name
     }
 
-    private func toggleBookmark() {
-        guard let chapter = currentChapter else { return }
-        model.toggleBookmark(book: book, chapter: chapter, content: content)
+    private var progressText: String {
+        guard !pages.isEmpty else { return "" }
+        let chapterProgress = Double(pageIndex + 1) / Double(pages.count)
+        let total = max(chapters.count, 1)
+        let overall = (Double(currentIndex) + chapterProgress) / Double(total)
+        return String(format: "%.1f%%", overall * 100)
     }
 
-    private func toggleSpeech() {
-        if speaking {
-            SpeechManager.shared.stop()
-            speaking = false
-        } else {
-            guard !content.isEmpty else { return }
-            speaking = true
-            SpeechManager.shared.speak(content) {
-                speaking = false
-            }
+    // MARK: - 翻页
+
+    private func nextPage() {
+        if pageIndex + 1 < pages.count {
+            pageIndex += 1
+            saveProgress()
+        } else if currentIndex + 1 < chapters.count {
+            load(index: currentIndex + 1)
+        }
+    }
+
+    private func previousPage() {
+        if pageIndex > 0 {
+            pageIndex -= 1
+            saveProgress()
+        } else if currentIndex > 0 {
+            load(index: currentIndex - 1, lastPage: true)
         }
     }
 
     // MARK: - 数据
+
+    private var processedContent: String {
+        let rules = model.replaceRules.filter { $0.enabled }
+        guard !rules.isEmpty else { return content }
+        return TextCleaner.applyReplaceRules(content, rules: rules)
+    }
+
+    private func rebuild() {
+        guard !content.isEmpty, pageSize.width > 0 else { return }
+        let text = processedContent
+        attributed = ReaderPaginator.attributedString(text, config: config)
+        pages = ReaderPaginator.pages(text, config: config, size: pageSize)
+        if jumpToLastPage {
+            jumpToLastPage = false
+            pageIndex = max(0, pages.count - 1)
+        } else if let restored = restoredPageIndex() {
+            pageIndex = min(restored, max(0, pages.count - 1))
+        } else {
+            pageIndex = min(pageIndex, max(0, pages.count - 1))
+        }
+    }
+
+    /// 打开时按 durChapterPos 恢复页内位置
+    private func restoredPageIndex() -> Int? {
+        guard currentIndex == book.durChapterIndex, book.durChapterPos > 0,
+              pages.count > 1 else { return nil }
+        let ratio = Double(book.durChapterPos) / 1000.0
+        return Int(ratio * Double(pages.count))
+    }
 
     private func prepare() {
         let cached = Storage.loadChapters(book.bookUrl)
@@ -333,32 +314,38 @@ struct ReaderView: View {
         }
     }
 
-    private func load(index: Int) {
+    private func load(index: Int, lastPage: Bool = false) {
         guard index >= 0, index < chapters.count else { return }
-        saveProgress(index: index)
+        saveProgress()
+        jumpToLastPage = lastPage
         loadContent(index: index)
     }
 
-    private func loadContent(index: Int, force: Bool = false) {
+    private func loadContent(index: Int) {
         currentIndex = index
+        pageIndex = 0
         guard chapters.indices.contains(index) else { return }
         let chapter = chapters[index]
-        if !force, let cached = Storage.loadContent(book.bookUrl, index: index) {
+
+        if let cached = Storage.loadContent(book.bookUrl, index: index) {
             content = cached
             error = nil
+            rebuild()
             saveProgress()
             return
         }
+
         if book.isLocal {
             do {
                 content = try BookService.loadLocalContent(book: book, chapter: chapter)
                 error = nil
+                rebuild()
             } catch {
                 self.error = error.localizedDescription
             }
-            saveProgress()
             return
         }
+
         guard let source = model.source(for: book) else {
             error = "找不到书源"
             return
@@ -367,10 +354,10 @@ struct ReaderView: View {
         content = ""
         Task { @MainActor in
             do {
-                let text = try await BookService.loadContent(book: book, chapter: chapter,
-                                                             source: source, force: force)
+                let text = try await BookService.loadContent(book: book, chapter: chapter, source: source)
                 content = text
                 error = nil
+                rebuild()
             } catch {
                 self.error = error.localizedDescription
             }
@@ -379,19 +366,21 @@ struct ReaderView: View {
         }
     }
 
-    private func saveProgress(index: Int? = nil) {
+    private func saveProgress() {
         var updated = book
-        let idx = index ?? currentIndex
-        updated.durChapterIndex = idx
-        updated.durChapterTitle = chapters.indices.contains(idx) ? chapters[idx].title : nil
+        updated.durChapterIndex = currentIndex
+        updated.durChapterTitle = chapters.indices.contains(currentIndex) ? chapters[currentIndex].title : nil
         updated.durChapterTime = Int64(Date().timeIntervalSince1970 * 1000)
+        if !pages.isEmpty {
+            updated.durChapterPos = Int(Double(pageIndex) / Double(pages.count) * 1000)
+        }
         if model.isOnShelf(book.bookUrl) {
             model.updateBook(updated)
         }
     }
 }
 
-// MARK: - 目录选择
+// MARK: - 目录
 
 struct ChapterPickerView: View {
     let chapters: [BookChapter]
@@ -478,11 +467,14 @@ struct ReaderSettingsView: View {
                         .foregroundColor(.secondary)
                 }
                 Section("行距") {
-                    Slider(value: $model.readerConfig.lineSpacing, in: 0...20, step: 1)
-                    Text("段落间隔 \(Int(model.readerConfig.paragraphSpacing))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    Slider(value: $model.readerConfig.paragraphSpacing, in: 2...24, step: 1)
+                    HStack {
+                        Text("行距")
+                        Slider(value: $model.readerConfig.lineSpacing, in: 0...20, step: 1)
+                    }
+                    HStack {
+                        Text("段距")
+                        Slider(value: $model.readerConfig.paragraphSpacing, in: 2...24, step: 1)
+                    }
                 }
                 Section("排版") {
                     Toggle("段首缩进", isOn: $model.readerConfig.indent)
@@ -504,7 +496,8 @@ struct ReaderSettingsView: View {
                                         .overlay(
                                             RoundedRectangle(cornerRadius: 8, style: .continuous)
                                                 .stroke(model.readerConfig.theme == theme
-                                                        ? Color.accentColor : Color.secondary.opacity(0.3),
+                                                        ? Color.accentColor
+                                                        : Color.secondary.opacity(0.3),
                                                         lineWidth: model.readerConfig.theme == theme ? 2 : 0.5)
                                         )
                                         .overlay(

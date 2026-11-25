@@ -10,6 +10,10 @@ struct BookDetailView: View {
     @State private var loadingToc = false
     @State private var error: String?
     @State private var showAllChapters = false
+    @State private var showSwitch = false
+    @State private var caching = false
+    @State private var cacheProgress: Double = 0
+    @State private var cachedCount = 0
 
     init(book: Book) {
         self.searchBookValue = nil
@@ -37,6 +41,14 @@ struct BookDetailView: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+                if caching {
+                    VStack(alignment: .leading, spacing: 6) {
+                        ProgressView(value: cacheProgress)
+                        Text("正在缓存 \(Int(cacheProgress * 100))%")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
                 chapterSection
             }
             .padding(16)
@@ -45,15 +57,39 @@ struct BookDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
-                Button {
-                    load(force: true)
+                Menu {
+                    Button {
+                        load(force: true)
+                    } label: {
+                        Label("刷新详情与目录", systemImage: "arrow.triangle.2.circlepath")
+                    }
+                    Button {
+                        showSwitch = true
+                    } label: {
+                        Label("换源", systemImage: "arrow.left.arrow.right")
+                    }
+                    Button {
+                        cacheAll()
+                    } label: {
+                        Label("缓存全本", systemImage: "arrow.down.circle")
+                    }
                 } label: {
-                    Image(systemName: "arrow.triangle.2.circlepath")
+                    Image(systemName: "ellipsis.circle")
                 }
                 .disabled(loading)
             }
         }
-        .onAppear { load(force: false) }
+        .onAppear {
+            load(force: false)
+            cachedCount = CacheService.cachedCount(book)
+        }
+        .sheet(isPresented: $showSwitch) {
+            SwitchSourceView(book: book) { updated in
+                book = updated
+                chapters = Storage.loadChapters(updated.bookUrl)
+                cachedCount = 0
+            }
+        }
     }
 
     // MARK: - 头部
@@ -225,6 +261,29 @@ struct BookDetailView: View {
         item.variable = book.variable
         item.type = book.type
         return item
+    }
+
+    private func cacheAll() {
+        guard let source = model.source(for: book) else {
+            error = "找不到这本书对应的书源"
+            return
+        }
+        guard !caching, !chapters.isEmpty else { return }
+        caching = true
+        cacheProgress = 0
+        let list = chapters
+        Task { @MainActor in
+            let done = await CacheService.downloadAll(book: book, source: source, chapters: list) { finished, total in
+                Task { @MainActor in
+                    cacheProgress = Double(finished) / Double(max(total, 1))
+                }
+            }
+            caching = false
+            cachedCount = done
+            if done < list.count {
+                error = "已缓存 \(done)/\(list.count) 章，其余失败（可在阅读时重试）"
+            }
+        }
     }
 
     private func load(force: Bool) {

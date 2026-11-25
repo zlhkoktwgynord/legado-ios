@@ -8,7 +8,7 @@ struct LegadoIOSApp: App {
         WindowGroup {
             RootView()
                 .environmentObject(model)
-                .preferredColorScheme(model.readerConfig.theme.isDark ? .dark : nil)
+                .preferredColorScheme(model.appearance == 1 ? .light : (model.appearance == 2 ? .dark : nil))
         }
     }
 }
