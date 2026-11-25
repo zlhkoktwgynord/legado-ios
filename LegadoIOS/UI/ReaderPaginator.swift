@@ -16,12 +16,18 @@ enum ReaderPaginator {
         paragraph.headIndent = 0
         paragraph.tailIndent = 0
 
+        let weight: UIFont.Weight
+        switch config.fontWeight {
+        case 0: weight = .light
+        case 2: weight = .bold
+        default: weight = .regular
+        }
         let font: UIFont
         if !config.fontFamily.isEmpty,
            let custom = UIFont(name: config.fontFamily, size: CGFloat(config.fontSize)) {
             font = custom
         } else {
-            font = UIFont.systemFont(ofSize: CGFloat(config.fontSize))
+            font = UIFont.systemFont(ofSize: CGFloat(config.fontSize), weight: weight)
         }
 
         let color = UIColor(Color(hex: config.theme.textHex))

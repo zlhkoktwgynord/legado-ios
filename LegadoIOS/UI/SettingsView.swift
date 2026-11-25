@@ -6,6 +6,7 @@ struct SettingsView: View {
     @State private var cacheSize: String = "计算中…"
     @State private var showCleanAlert = false
     @State private var message: String?
+    @State private var showStyle = false
 
     var body: some View {
         NavigationStack {
@@ -24,8 +25,8 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    NavigationLink {
-                        ReaderSettingsView()
+                    Button {
+                        showStyle = true
                     } label: {
                         Label("阅读排版", systemImage: "textformat")
                     }
@@ -105,6 +106,10 @@ struct SettingsView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("完成") { dismiss() }
                 }
+            }
+            .sheet(isPresented: $showStyle) {
+                ReaderStylePanel()
+                    .presentationDetents([.height(380)])
             }
             .onAppear {
                 calcCache()

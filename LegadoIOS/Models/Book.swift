@@ -201,6 +201,8 @@ struct ReaderConfig: Codable, Equatable {
     var indent: Bool = true
     var fontFamily: String = ""      // 空 = 系统字体
     var letterSpacing: Double = 0.4
+    /// 0 细 1 中 2 粗
+    var fontWeight: Int = 1
     var theme: ReaderTheme = .paper
     var padding: Double = 20
     var showStatusBar: Bool = false

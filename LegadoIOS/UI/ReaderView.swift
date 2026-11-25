@@ -1,6 +1,7 @@
 import SwiftUI
+import UIKit
 
-/// 阅读器：仿「阅读」原版的翻页阅读
+/// 阅读器：仿「阅读」原版的翻页阅读 + 覆盖翻页动画
 struct ReaderView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
@@ -17,9 +18,12 @@ struct ReaderView: View {
     @State private var error: String?
     @State private var showChrome = true
     @State private var showChapterList = false
-    @State private var showSettings = false
+    @State private var showStyle = false
     @State private var jumpToLastPage = false
     @State private var pageSize: CGSize = .zero
+    @State private var overlayRange: NSRange?
+    @State private var overlayX: CGFloat = 0
+    @State private var batteryLevel: Float = -1
 
     init(book: Book, startIndex: Int) {
         self.book = book
@@ -33,9 +37,9 @@ struct ReaderView: View {
     var body: some View {
         GeometryReader { geo in
             let width = max(120, geo.size.width - CGFloat(config.padding) * 2)
-            let height = max(160, geo.size.height - 76)
+            let height = max(160, geo.size.height - 92)
 
-            ZStack {
+            ZStack(alignment: .bottom) {
                 Color(hex: theme.backgroundHex).ignoresSafeArea()
 
                 pageLayer
@@ -44,54 +48,69 @@ struct ReaderView: View {
                     .gesture(tapGesture(width: width))
                     .simultaneousGesture(swipeGesture)
 
+                footer
+                    .padding(.horizontal, CGFloat(config.padding))
+                    .padding(.bottom, 4)
+
                 if showChrome {
                     chrome
                 }
             }
             .onAppear {
                 pageSize = CGSize(width: width, height: height)
+                UIDevice.current.isBatteryMonitoringEnabled = true
+                batteryLevel = UIDevice.current.batteryLevel
                 prepare()
             }
             .onChange(of: width) { newValue in
                 pageSize = CGSize(width: newValue, height: height)
                 rebuild()
             }
-            .onChange(of: config) { _ in
-                rebuild()
-            }
+            .onChange(of: config) { _ in rebuild() }
         }
+        .statusBarHidden(true)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
         .onDisappear { saveProgress() }
-        .sheet(isPresented: $showChapterList) {
-            ChapterPickerView(chapters: chapters, currentIndex: currentIndex) { index in
-                showChapterList = false
-                load(index: index)
-            }
+        .fullScreenCover(isPresented: $showChapterList) {
+            ChapterListPage(book: book,
+                            chapters: chapters,
+                            currentIndex: currentIndex,
+                            onSelect: { index in
+                                showChapterList = false
+                                load(index: index)
+                            },
+                            onClose: { showChapterList = false })
         }
-        .sheet(isPresented: $showSettings) {
-            ReaderSettingsView()
+        .sheet(isPresented: $showStyle) {
+            ReaderStylePanel()
+                .presentationDetents([.height(380)])
+                .presentationDragIndicator(.visible)
         }
     }
 
     // MARK: - 页面
 
-    @ViewBuilder
     private var pageLayer: some View {
-        if loading && content.isEmpty {
-            ProgressView()
-        } else if let error = error, content.isEmpty {
-            VStack(spacing: 12) {
-                ErrorBanner(message: error)
-                Button("重试") { loadContent(index: currentIndex) }
+        ZStack(alignment: .topLeading) {
+            if loading && content.isEmpty {
+                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else if let error = error, content.isEmpty {
+                VStack(spacing: 12) {
+                    ErrorBanner(message: error)
+                    Button("重试") { loadContent(index: currentIndex) }
+                }
+                .padding()
+            } else if let attributed = attributed, pages.indices.contains(pageIndex) {
+                PageTextView(attributed: attributed, range: pages[pageIndex])
+                if let overlay = overlayRange {
+                    PageTextView(attributed: attributed, range: overlay)
+                        .offset(x: overlayX)
+                }
             }
-            .padding()
-        } else if let attributed = attributed, pages.indices.contains(pageIndex) {
-            PageTextView(attributed: attributed, range: pages[pageIndex])
-        } else {
-            Color.clear
         }
+        .clipped()
     }
 
     private func tapGesture(width: CGFloat) -> some Gesture {
@@ -117,7 +136,36 @@ struct ReaderView: View {
             }
     }
 
-    // MARK: - 顶部 / 底部
+    // MARK: - 底部状态条（电量 / 时间 / 页码 / 进度）
+
+    private var footer: some View {
+        TimelineView(.everyMinute) { context in
+            HStack(spacing: 6) {
+                Text(batteryText)
+                Text(timeText(context.date))
+                Spacer()
+                if !pages.isEmpty {
+                    Text("\(pageIndex + 1)/\(pages.count)")
+                    Text(progressText)
+                }
+            }
+            .font(.system(size: 10))
+            .foregroundColor(textColor.opacity(0.5))
+        }
+    }
+
+    private var batteryText: String {
+        guard batteryLevel >= 0 else { return "--%" }
+        return "\(Int(batteryLevel * 100))%"
+    }
+
+    private func timeText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
+    // MARK: - 工具栏
 
     private var chrome: some View {
         VStack {
@@ -182,18 +230,13 @@ struct ReaderView: View {
 
             HStack(spacing: 0) {
                 barButton("目录", "list.bullet") { showChapterList = true }
-                barButton("界面", "textformat.size") { showSettings = true }
-                barButton(theme.isDark ? "日间" : "夜间",
-                          theme.isDark ? "sun.max" : "moon") {
-                    model.readerConfig.theme = theme.isDark ? .paper : .dark
-                    model.saveReaderConfig()
-                }
+                barButton("界面", "textformat.size") { showStyle = true }
             }
         }
         .foregroundColor(textColor)
         .padding(.horizontal, 16)
         .padding(.top, 10)
-        .padding(.bottom, 16)
+        .padding(.bottom, 14)
         .background(Color(hex: theme.backgroundHex).opacity(0.97))
         .overlay(alignment: .top) { Divider().opacity(0.25) }
     }
@@ -201,7 +244,7 @@ struct ReaderView: View {
     private func barButton(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             VStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 16))
+                Image(systemName: icon).font(.system(size: 17))
                 Text(title).font(.system(size: 10))
             }
             .frame(maxWidth: .infinity)
@@ -213,16 +256,10 @@ struct ReaderView: View {
         Binding(
             get: { Double(pageIndex) },
             set: { value in
-                let target = Int(value.rounded())
                 guard !pages.isEmpty else { return }
-                pageIndex = min(max(0, target), pages.count - 1)
+                pageIndex = min(max(0, Int(value.rounded())), pages.count - 1)
                 saveProgress()
             })
-    }
-
-    private var pageText: String {
-        guard !pages.isEmpty else { return "" }
-        return "\(pageIndex + 1)/\(pages.count)"
     }
 
     private var chapterTitle: String {
@@ -235,24 +272,41 @@ struct ReaderView: View {
         let chapterProgress = Double(pageIndex + 1) / Double(pages.count)
         let total = max(chapters.count, 1)
         let overall = (Double(currentIndex) + chapterProgress) / Double(total)
-        return String(format: "%.1f%%", overall * 100)
+        return String(format: "%.2f%%", overall * 100)
     }
 
-    // MARK: - 翻页
+    // MARK: - 覆盖翻页
 
     private func nextPage() {
+        guard !pages.isEmpty, overlayRange == nil else { return }
         if pageIndex + 1 < pages.count {
-            pageIndex += 1
-            saveProgress()
+            let target = pageIndex + 1
+            overlayRange = pages[target]
+            overlayX = pageSize.width
+            withAnimation(.easeOut(duration: 0.22)) { overlayX = 0 }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.23) {
+                pageIndex = target
+                overlayRange = nil
+                saveProgress()
+            }
         } else if currentIndex + 1 < chapters.count {
             load(index: currentIndex + 1)
         }
     }
 
     private func previousPage() {
+        guard !pages.isEmpty, overlayRange == nil else { return }
         if pageIndex > 0 {
-            pageIndex -= 1
-            saveProgress()
+            let target = pageIndex - 1
+            let current = pages[pageIndex]
+            pageIndex = target
+            overlayRange = current
+            overlayX = 0
+            withAnimation(.easeOut(duration: 0.22)) { overlayX = pageSize.width }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.23) {
+                overlayRange = nil
+                saveProgress()
+            }
         } else if currentIndex > 0 {
             load(index: currentIndex - 1, lastPage: true)
         }
@@ -281,7 +335,6 @@ struct ReaderView: View {
         }
     }
 
-    /// 打开时按 durChapterPos 恢复页内位置
     private func restoredPageIndex() -> Int? {
         guard currentIndex == book.durChapterIndex, book.durChapterPos > 0,
               pages.count > 1 else { return nil }
@@ -328,6 +381,7 @@ struct ReaderView: View {
     private func loadContent(index: Int) {
         currentIndex = index
         pageIndex = 0
+        overlayRange = nil
         guard chapters.indices.contains(index) else { return }
         let chapter = chapters[index]
 
@@ -380,155 +434,6 @@ struct ReaderView: View {
         }
         if model.isOnShelf(book.bookUrl) {
             model.updateBook(updated)
-        }
-    }
-}
-
-// MARK: - 目录
-
-struct ChapterPickerView: View {
-    let chapters: [BookChapter]
-    let currentIndex: Int
-    let onSelect: (Int) -> Void
-    @Environment(\.dismiss) private var dismiss
-    @State private var ascending = true
-
-    var body: some View {
-        NavigationStack {
-            List {
-                ForEach(visibleChapters) { chapter in
-                    Button {
-                        onSelect(chapter.index)
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Text(chapter.title)
-                                .font(.subheadline)
-                                .foregroundColor(chapter.index == currentIndex ? .accentColor : .primary)
-                                .lineLimit(2)
-                            Spacer()
-                            if chapter.index == currentIndex {
-                                Image(systemName: "chevron.left")
-                                    .font(.caption)
-                                    .foregroundColor(.accentColor)
-                            }
-                        }
-                    }
-                    .buttonStyle(.plain)
-                    .listRowBackground(chapter.index == currentIndex
-                                       ? Color.accentColor.opacity(0.08) : Color.clear)
-                }
-            }
-            .listStyle(.plain)
-            .navigationTitle("目录（\(chapters.count)）")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(ascending ? "倒序" : "正序") { ascending.toggle() }
-                }
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("关闭") { dismiss() }
-                }
-            }
-        }
-    }
-
-    private var visibleChapters: [BookChapter] {
-        ascending ? chapters : Array(chapters.reversed())
-    }
-}
-
-// MARK: - 排版设置
-
-struct ReaderSettingsView: View {
-    @EnvironmentObject private var model: AppModel
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section("字体") {
-                    Picker("字体", selection: $model.readerConfig.fontFamily) {
-                        Text("系统").tag("")
-                        Text("宋体").tag("Songti SC")
-                        Text("黑体").tag("PingFang SC")
-                        Text("楷体").tag("Kaiti SC")
-                        Text("圆体").tag("Yuanti SC")
-                    }
-                    HStack {
-                        Text("字间距")
-                        Slider(value: $model.readerConfig.letterSpacing, in: 0...3, step: 0.2)
-                    }
-                }
-                Section("字号") {
-                    HStack {
-                        Image(systemName: "textformat.size.smaller")
-                        Slider(value: $model.readerConfig.fontSize, in: 14...30, step: 1)
-                        Image(systemName: "textformat.size.larger")
-                    }
-                    Text("当前 \(Int(model.readerConfig.fontSize))")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-                Section("行距") {
-                    HStack {
-                        Text("行距")
-                        Slider(value: $model.readerConfig.lineSpacing, in: 0...20, step: 1)
-                    }
-                    HStack {
-                        Text("段距")
-                        Slider(value: $model.readerConfig.paragraphSpacing, in: 2...24, step: 1)
-                    }
-                }
-                Section("排版") {
-                    Toggle("段首缩进", isOn: $model.readerConfig.indent)
-                    HStack {
-                        Text("页边距")
-                        Slider(value: $model.readerConfig.padding, in: 8...40, step: 1)
-                    }
-                }
-                Section("主题") {
-                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 72), spacing: 10)], spacing: 10) {
-                        ForEach(ReaderTheme.allCases) { theme in
-                            Button {
-                                model.readerConfig.theme = theme
-                            } label: {
-                                VStack(spacing: 6) {
-                                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                        .fill(Color(hex: theme.backgroundHex))
-                                        .frame(height: 44)
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 8, style: .continuous)
-                                                .stroke(model.readerConfig.theme == theme
-                                                        ? Color.accentColor
-                                                        : Color.secondary.opacity(0.3),
-                                                        lineWidth: model.readerConfig.theme == theme ? 2 : 0.5)
-                                        )
-                                        .overlay(
-                                            Text("文")
-                                                .foregroundColor(Color(hex: theme.textHex))
-                                        )
-                                    Text(theme.name)
-                                        .font(.caption2)
-                                        .foregroundColor(.secondary)
-                                }
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                }
-            }
-            .navigationTitle("排版")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button("完成") {
-                        model.saveReaderConfig()
-                        dismiss()
-                    }
-                }
-            }
-            .onDisappear { model.saveReaderConfig() }
         }
     }
 }

@@ -53,6 +53,7 @@ enum LocalBookImporter {
             chapter.index = index
             chapter.start = Int64(item.start)
             chapter.end = Int64(item.end)
+            chapter.wordCount = "\(max(0, item.end - item.start))字"
             chapter.baseUrl = ""
             chapters.append(chapter)
         }
