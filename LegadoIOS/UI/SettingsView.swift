@@ -109,7 +109,7 @@ struct SettingsView: View {
             }
             .sheet(isPresented: $showStyle) {
                 ReaderStylePanel()
-                    .presentationDetents([.height(380)])
+                    .presentationDetents([.height(540)])
             }
             .onAppear {
                 calcCache()

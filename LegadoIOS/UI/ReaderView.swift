@@ -5,6 +5,7 @@ import UIKit
 struct ReaderView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.colorScheme) private var colorScheme
 
     let book: Book
 
@@ -24,13 +25,14 @@ struct ReaderView: View {
     @State private var overlayRange: NSRange?
     @State private var overlayX: CGFloat = 0
     @State private var batteryLevel: Float = -1
+    @State private var baseX: CGFloat = 0
 
     init(book: Book, startIndex: Int) {
         self.book = book
         _currentIndex = State(initialValue: max(0, startIndex))
     }
 
-    private var theme: ReaderTheme { model.readerConfig.theme }
+    private var theme: ReaderTheme { model.readerConfig.theme.resolved(dark: colorScheme == .dark) }
     private var config: ReaderConfig { model.readerConfig }
     private var textColor: Color { Color(hex: theme.textHex) }
 
@@ -47,6 +49,10 @@ struct ReaderView: View {
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
                     .gesture(tapGesture(width: width))
                     .simultaneousGesture(swipeGesture)
+
+                header
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .allowsHitTesting(false)
 
                 footer
                     .padding(.horizontal, CGFloat(config.padding))
@@ -85,7 +91,7 @@ struct ReaderView: View {
         }
         .sheet(isPresented: $showStyle) {
             ReaderStylePanel()
-                .presentationDetents([.height(380)])
+                .presentationDetents([.height(540)])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -104,6 +110,7 @@ struct ReaderView: View {
                 .padding()
             } else if let attributed = attributed, pages.indices.contains(pageIndex) {
                 PageTextView(attributed: attributed, range: pages[pageIndex])
+                    .offset(x: baseX)
                 if let overlay = overlayRange {
                     PageTextView(attributed: attributed, range: overlay)
                         .offset(x: overlayX)
@@ -142,7 +149,6 @@ struct ReaderView: View {
         TimelineView(.everyMinute) { context in
             HStack(spacing: 6) {
                 Text(batteryText)
-                Text(timeText(context.date))
                 Spacer()
                 if !pages.isEmpty {
                     Text("\(pageIndex + 1)/\(pages.count)")
@@ -151,6 +157,22 @@ struct ReaderView: View {
             }
             .font(.system(size: 10))
             .foregroundColor(textColor.opacity(0.5))
+        }
+    }
+
+    private var header: some View {
+        TimelineView(.everyMinute) { context in
+            HStack(spacing: 8) {
+                Text(chapterTitle)
+                    .font(.system(size: 11))
+                    .lineLimit(1)
+                Spacer()
+                Text(timeText(context.date))
+                    .font(.system(size: 11))
+            }
+            .foregroundColor(textColor.opacity(0.45))
+            .padding(.horizontal, CGFloat(config.padding))
+            .padding(.top, 6)
         }
     }
 
@@ -230,7 +252,7 @@ struct ReaderView: View {
 
             HStack(spacing: 0) {
                 barButton("目录", "list.bullet") { showChapterList = true }
-                barButton("界面", "textformat.size") { showStyle = true }
+                barButton("Aa", "textformat.size") { showStyle = true }
             }
         }
         .foregroundColor(textColor)
@@ -279,8 +301,29 @@ struct ReaderView: View {
 
     private func nextPage() {
         guard !pages.isEmpty, overlayRange == nil else { return }
-        if pageIndex + 1 < pages.count {
-            let target = pageIndex + 1
+        guard pageIndex + 1 < pages.count else {
+            if currentIndex + 1 < chapters.count { load(index: currentIndex + 1) }
+            return
+        }
+        let target = pageIndex + 1
+        switch config.pageAnim {
+        case 2:
+            pageIndex = target
+            saveProgress()
+        case 1:
+            overlayRange = pages[target]
+            overlayX = pageSize.width
+            withAnimation(.easeOut(duration: 0.25)) {
+                overlayX = 0
+                baseX = -pageSize.width
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
+                pageIndex = target
+                overlayRange = nil
+                baseX = 0
+                saveProgress()
+            }
+        default:
             overlayRange = pages[target]
             overlayX = pageSize.width
             withAnimation(.easeOut(duration: 0.22)) { overlayX = 0 }
@@ -289,15 +332,35 @@ struct ReaderView: View {
                 overlayRange = nil
                 saveProgress()
             }
-        } else if currentIndex + 1 < chapters.count {
-            load(index: currentIndex + 1)
         }
     }
 
     private func previousPage() {
         guard !pages.isEmpty, overlayRange == nil else { return }
-        if pageIndex > 0 {
-            let target = pageIndex - 1
+        guard pageIndex > 0 else {
+            if currentIndex > 0 { load(index: currentIndex - 1, lastPage: true) }
+            return
+        }
+        let target = pageIndex - 1
+        switch config.pageAnim {
+        case 2:
+            pageIndex = target
+            saveProgress()
+        case 1:
+            let current = pages[pageIndex]
+            baseX = -pageSize.width
+            pageIndex = target
+            overlayRange = current
+            overlayX = 0
+            withAnimation(.easeOut(duration: 0.25)) {
+                overlayX = pageSize.width
+                baseX = 0
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
+                overlayRange = nil
+                saveProgress()
+            }
+        default:
             let current = pages[pageIndex]
             pageIndex = target
             overlayRange = current
@@ -307,8 +370,6 @@ struct ReaderView: View {
                 overlayRange = nil
                 saveProgress()
             }
-        } else if currentIndex > 0 {
-            load(index: currentIndex - 1, lastPage: true)
         }
     }
 

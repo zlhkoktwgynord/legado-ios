@@ -203,7 +203,9 @@ struct ReaderConfig: Codable, Equatable {
     var letterSpacing: Double = 0.4
     /// 0 细 1 中 2 粗
     var fontWeight: Int = 1
-    var theme: ReaderTheme = .paper
+    /// 翻页动画：0 覆盖 1 滑动 2 无动画
+    var pageAnim: Int = 0
+    var theme: ReaderTheme = .system
     var padding: Double = 20
     var showStatusBar: Bool = false
 
@@ -211,12 +213,13 @@ struct ReaderConfig: Codable, Equatable {
 }
 
 enum ReaderTheme: String, Codable, CaseIterable, Identifiable {
-    case paper, white, sepia, green, dark, black
+    case system, paper, white, sepia, green, dark, black
 
     var id: String { rawValue }
 
     var name: String {
         switch self {
+        case .system: return "跟随系统"
         case .paper: return "牛皮纸"
         case .white: return "纯白"
         case .sepia: return "护眼黄"
@@ -228,25 +231,32 @@ enum ReaderTheme: String, Codable, CaseIterable, Identifiable {
 
     var backgroundHex: String {
         switch self {
+        case .system: return "#FFFFFF"
         case .paper: return "#F5F1E6"
         case .white: return "#FFFFFF"
         case .sepia: return "#F8EFD8"
         case .green: return "#E3F0E0"
-        case .dark: return "#1C1C1E"
+        case .dark: return "#14181C"
         case .black: return "#000000"
         }
     }
 
     var textHex: String {
         switch self {
+        case .system: return "#222222"
         case .paper: return "#2B2B2B"
         case .white: return "#222222"
         case .sepia: return "#4A3B22"
         case .green: return "#22331F"
-        case .dark: return "#C9C9CE"
-        case .black: return "#9A9A9A"
+        case .dark: return "#D6D6D8"
+        case .black: return "#B0B0B0"
         }
     }
 
     var isDark: Bool { self == .dark || self == .black }
+
+    /// 跟随系统时根据外观解析成实际主题
+    func resolved(dark: Bool) -> ReaderTheme {
+        self == .system ? (dark ? .dark : .white) : self
+    }
 }
