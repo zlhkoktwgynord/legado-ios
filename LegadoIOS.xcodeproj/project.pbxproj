@@ -1,0 +1,1094 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		67ACC637D4105D2545BF03AF /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A7264C2DD0840ED4ACAD18AD;
+		};
+		30A9F4D76746063D7CB41057 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 7570E5C94A93EFFFF484E9C8;
+		};
+		29CAD792186AF2F8E08FBFC9 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 09F3A6C28AC461D4B7D9DA60;
+		};
+		45356450067EE6EE68D4A0E3 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 7DC7739C42865C46114E3ED8;
+		};
+		F90C773C3DC4B042BBD4E21C /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = FEB2AD6009993CEB3C2784FF;
+		};
+		58A5A41B1EB0F904E50257E2 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 82628A5E1FB673A348134E6E;
+		};
+		25929009E17A5B4FACD4541F /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F5A6C76D75CEE98FAC69432F;
+		};
+		688D2D2F553EA712D1005ACA /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A437A4BF7C1CA87B8730CDD6;
+		};
+		F74E57B24E2FC4C18E32E778 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 3C074FF7A5CD76AB4D9DA7FA;
+		};
+		2EE3C32D845D1A2E38B6FCF4 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = D54D00A388FDEA090E65D01C;
+		};
+		08CC4B5702E894D163155C53 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = AB4CD7FF932F3AF7F516E1FA;
+		};
+		07CE135469E536BAB758C4A7 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 292C5C847958365DCE0D9184;
+		};
+		D50247BAAD2821253A36B752 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 6B5988DA76EB8082A9C7C548;
+		};
+		B3283E851E6AEAEED9C03B36 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 39650639A84609ADD33C4308;
+		};
+		E0DB19370055740ABD1FFB20 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 4BEC3B2570CCD0AB026491B2;
+		};
+		D8CEA1672EDD57C92C7E32B4 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 8B22BCE4E4592B768186B2BE;
+		};
+		DF871D18B45F98C2499F4B45 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 8BF876B316BCA4264D474CED;
+		};
+		DB8FB76967224FA9AA81233F /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 39C3C8CB3433A7F1BECD0F7B;
+		};
+		876BE1B7FA308006C7B5652F /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 8896EF044437FE117945F1FF;
+		};
+		7377502E76898FCDF383C2E8 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 12C3545920A027EDA7AA1419;
+		};
+		EFFAC2513E55C9A3CD6D3731 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 675450C483BDFF622E325D49;
+		};
+		C263B893F309ECDC965A1E55 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = EC9E9487B109E0286187E322;
+		};
+		296D9A1550DFF84267F86DB1 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F2B1EAE0FAA3E6A705FC0381;
+		};
+		2B8DE1CF0F9A50901870D1FF /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F52826D35CBB5E1E55658490;
+		};
+		D32C83CC6C4D1D0EA6D45320 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 20F97CED0908F13F75FD3653;
+		};
+		3709236786299B51A0C08DBB /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B2FEB1E5BE26F27054FC9998;
+		};
+		E96F9A3C6203EBC6BCA9E850 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 8236CFDED8437FD80EF223F8;
+		};
+		91A3746AD89209BE5B3C0004 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B0B4CBD30A03848AFF15C816;
+		};
+		CC4E104E2C33CB47311113D8 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 87B03D788E64C1F650989A63;
+		};
+		4222076161C53A3682B146DB /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A757DEC083E97607D1F3A9D4;
+		};
+		5858457A25E83B5B8CFAED9F /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A2687340D5109401DAA5D3BD;
+		};
+		4B67951530521794C486C49A /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 534B7427AB0BC64994EE223F;
+		};
+		D1B6632259DB26A45996679C /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F9B8E3CDBF313DD477EA62D8;
+		};
+		C566F9BDCE2DAA17AACAE45A /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 4D1DFAC858A5E8FF8BA305EF;
+		};
+		2C268DF128D3F028DBBAC6EE /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 60535FEC337F83C8AD001968;
+		};
+		9EA59729759EE2800D5CE9FF /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = C894C03EEC704F09517D1BDA;
+		};
+		A227448CDC09A1EC5ACE9538 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 495EF1E78D0CD920AF74C1E2;
+		};
+		80CF215C1326AB0AAB7E5BC0 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 3DE8947941D6AA5B66517107;
+		};
+		4B9573DE6FCCB6500C765B8E /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = D5EBD2757422B7380BA81752;
+		};
+		9F8F66BB90E45F3BA90074A9 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 0007E0DCEDDC846A93BDC89A;
+		};
+		7AF03A2929474845B50FD10B /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = EA8D5F03331A7FEA65730DD0;
+		};
+		F86C07A9BA5675ACA8F5C9DF /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 357D9675E8E962F426B5D7BC;
+		};
+		F56D942FFD03698F1B1FF651 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 212938678553E862E6F17388;
+		};
+		E8739BCD3BDD4101BCE8CC4C /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 7CC428705E0026FF57F0B8E5;
+		};
+		B1CED68BD6B2D68B29FC013B /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 90F2432D44C5E82DE27945F2;
+		};
+		A25C2F877EC703DADC943026 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B1ECB93BAAFC28F93A0C14F1;
+		};
+		0E42DFA41BCBA0DA88A279FE /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = D6ED59E291D7CB58A3C36178;
+		};
+		80AB6D5DBE60542E5BBAA38B /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 05DCCD8730D0A28100287B20;
+		};
+		B11638BD3D5A0CEB22F7A83F /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 2008DCB16BE54C3691105C70;
+		};
+		41AED8131B8315A995D96C69 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 0223B73597E6A3DD6A0AA253;
+		};
+		7AB0FFEAE84EF2F1A7F9A636 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 842B9F46C20B655D9CB82A6E;
+		};
+		3747CF190F5DC15612B6BBC6 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 884E9D22108E3A705CFDB133;
+		};
+		A17B48D3A0D668BDCC8B4470 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F6B5D67F96E8803873653A6D;
+		};
+		9314CF4D3800BBD0CC77FCA3 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 741B6C19840537C1E39EF723;
+		};
+		2718C965E9B71B5385BC8F81 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = C9C267170A1A04AA022A211C;
+		};
+		22BD0B466692B0B53BE53BF5 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 50C4ACCEC5756DB3CED7EEFE;
+		};
+		E015562ABD155E5C61FDBE2E /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 1296C19904F9B0444D8AE7A1;
+		};
+		221A71499C54417EF133A774 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 0C1200A2EF4E8BB7042CF652;
+		};
+		CA9A9FF68606EF8AF280D989 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 44206A5130C4F9386E7A2D6D;
+		};
+		F5ED30CAF197E6B686A4B92D /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 92B5482312F1E7B67CF9EE52;
+		};
+		6D5A1D638DA9AC78027EDC39 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 0AAD2FE84851106BAF87D8CF;
+		};
+		62CA54823A8906437C5C2496 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 43829182915B7EDF2A988175;
+		};
+		CDEFA8861BACCF9A972F5E58 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B61215668552303F0F31A2EF;
+		};
+		96FD8EC755DA9D3E5AC5425B /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B60ABAD1E02DEFD3C3D9B869;
+		};
+		A8C7D997F73E42A6DA71006A /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 2BC9721599F24BAB9F022862;
+		};
+		F67E2D54DB204588357D654A /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 5E8C1D598370A62DB8246757;
+		};
+		22DAD92ACB0576EDF7BD5AB5 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 1222609A6944CD4DBDA80F10;
+		};
+		73CC9A747F34CDBD629933BE /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = AFADE3E17A32155D73C05944;
+		};
+		A81CAC70A59314CE30749642 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 3268B9DADF8EA79F5C9B0165;
+		};
+		17CDEA22FCF27DE9EE0AFCF2 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 26226AC4A561F57F4FD2D272;
+		};
+		6A88BB33F7AD3E9AAEEF07C3 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = D8392AA05CD7CCA477DDF9F7;
+		};
+		5D3D4DA755D042DD4C12DCE0 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 34ED3306FD83BDB7B1817C50;
+		};
+		6042591590F1724824012BF6 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A3EB810E75CF976C22542D52;
+		};
+		3ABB7F93569AF90B1B1E4288 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = F0524B5C5F34AFAF436BE49F;
+		};
+		DF20B5DF3E9833DBE10E7F45 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A2AD603687F4336A948AF917;
+		};
+		880ABD052457E6388787DAED /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 799B57CBF1680CC6429C26A8;
+		};
+		128E88BCF8CE95D3F13BA233 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = DF8602BE0DC9402BB2CDE5A8;
+		};
+		84DADB6B6FF9C3FB909F25A6 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 275D734A6EB08FD0B10F86BA;
+		};
+		A33FAD016D814089009B8CE0 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 555976C76F10E6890364FC83;
+		};
+		4983172D643B5D7BA3B5D291 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = A72AE8C44DDC0EBB53582440;
+		};
+		3A07842F260C61952064C098 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 8E2E58E73CC88FF6A0DD232B;
+		};
+		260EF84C94112742BF5A1EBC /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 2DB4D04521F79C88AA41F9A0;
+		};
+		9134F77F833F595C72B8CD75 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = ABC332233348C09A90A719C8;
+		};
+		B4C7E3110F2F12CD4C86F563 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 075E9F1875EED9CE600FF538;
+		};
+		E1F14A7858DAA72DBE3FAB12 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = CCA408B305450DE1080E1C3A;
+		};
+		29BD58455E6B3E90406ABE4D /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 3B702A83BBB5BD9FAE60040D;
+		};
+		B41598A7BBD0EC3F267B7C0A /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 55108742AA3027D4CDA5338D;
+		};
+		97EB0244BF9CD21FB73DDBB6 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 87D7271B11409E49C80285E4;
+		};
+		96504D4098D7CAD7CA29DDDE /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = B610FCE336EEB5E8D662A2DE;
+		};
+		B50ACB6EBA06AF96EA4D5646 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 3F48DF4F3860AD99D8ED0721;
+		};
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		A7264C2DD0840ED4ACAD18AD /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "AppModel.swift";
+				sourceTree = "<group>";
+		};
+		7570E5C94A93EFFFF484E9C8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "LegadoIOSApp.swift";
+				sourceTree = "<group>";
+		};
+		09F3A6C28AC461D4B7D9DA60 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "AnalyzeRule.swift";
+				sourceTree = "<group>";
+		};
+		7DC7739C42865C46114E3ED8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "AnalyzeURL.swift";
+				sourceTree = "<group>";
+		};
+		FEB2AD6009993CEB3C2784FF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "HTMLAnalyze.swift";
+				sourceTree = "<group>";
+		};
+		82628A5E1FB673A348134E6E /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "HTTP.swift";
+				sourceTree = "<group>";
+		};
+		F5A6C76D75CEE98FAC69432F /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "JSEngine.swift";
+				sourceTree = "<group>";
+		};
+		A437A4BF7C1CA87B8730CDD6 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "JSONPath.swift";
+				sourceTree = "<group>";
+		};
+		3C074FF7A5CD76AB4D9DA7FA /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "RuleSplitter.swift";
+				sourceTree = "<group>";
+		};
+		D54D00A388FDEA090E65D01C /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SearchService.swift";
+				sourceTree = "<group>";
+		};
+		AB4CD7FF932F3AF7F516E1FA /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SourceEngine.swift";
+				sourceTree = "<group>";
+		};
+		292C5C847958365DCE0D9184 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Storage.swift";
+				sourceTree = "<group>";
+		};
+		6B5988DA76EB8082A9C7C548 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "TextCleaner.swift";
+				sourceTree = "<group>";
+		};
+		39650639A84609ADD33C4308 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "URLTool.swift";
+				sourceTree = "<group>";
+		};
+		4BEC3B2570CCD0AB026491B2 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "XPathBridge.swift";
+				sourceTree = "<group>";
+		};
+		8B22BCE4E4592B768186B2BE /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Book.swift";
+				sourceTree = "<group>";
+		};
+		8BF876B316BCA4264D474CED /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "BookSource.swift";
+				sourceTree = "<group>";
+		};
+		39C3C8CB3433A7F1BECD0F7B /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "BookDetailView.swift";
+				sourceTree = "<group>";
+		};
+		8896EF044437FE117945F1FF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "BookshelfView.swift";
+				sourceTree = "<group>";
+		};
+		12C3545920A027EDA7AA1419 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Components.swift";
+				sourceTree = "<group>";
+		};
+		675450C483BDFF622E325D49 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ReaderView.swift";
+				sourceTree = "<group>";
+		};
+		EC9E9487B109E0286187E322 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "RootView.swift";
+				sourceTree = "<group>";
+		};
+		F2B1EAE0FAA3E6A705FC0381 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SearchView.swift";
+				sourceTree = "<group>";
+		};
+		F52826D35CBB5E1E55658490 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SettingsView.swift";
+				sourceTree = "<group>";
+		};
+		20F97CED0908F13F75FD3653 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SourceListView.swift";
+				sourceTree = "<group>";
+		};
+		B2FEB1E5BE26F27054FC9998 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SpeechManager.swift";
+				sourceTree = "<group>";
+		};
+		8236CFDED8437FD80EF223F8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Attribute.swift";
+				sourceTree = "<group>";
+		};
+		B0B4CBD30A03848AFF15C816 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "AttributeMutationTracking.swift";
+				sourceTree = "<group>";
+		};
+		87B03D788E64C1F650989A63 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Attributes.swift";
+				sourceTree = "<group>";
+		};
+		A757DEC083E97607D1F3A9D4 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "BinarySearch.swift";
+				sourceTree = "<group>";
+		};
+		A2687340D5109401DAA5D3BD /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "BooleanAttribute.swift";
+				sourceTree = "<group>";
+		};
+		534B7427AB0BC64994EE223F /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ByteSlice.swift";
+				sourceTree = "<group>";
+		};
+		F9B8E3CDBF313DD477EA62D8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "CharacterExt.swift";
+				sourceTree = "<group>";
+		};
+		4D1DFAC858A5E8FF8BA305EF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "CharacterReader.swift";
+				sourceTree = "<group>";
+		};
+		60535FEC337F83C8AD001968 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Cleaner.swift";
+				sourceTree = "<group>";
+		};
+		C894C03EEC704F09517D1BDA /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Collector.swift";
+				sourceTree = "<group>";
+		};
+		495EF1E78D0CD920AF74C1E2 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "CombiningEvaluator.swift";
+				sourceTree = "<group>";
+		};
+		3DE8947941D6AA5B66517107 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Comment.swift";
+				sourceTree = "<group>";
+		};
+		D5EBD2757422B7380BA81752 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "CssSelector.swift";
+				sourceTree = "<group>";
+		};
+		0007E0DCEDDC846A93BDC89A /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "DataNode.swift";
+				sourceTree = "<group>";
+		};
+		EA8D5F03331A7FEA65730DD0 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "DebugTrace.swift";
+				sourceTree = "<group>";
+		};
+		357D9675E8E962F426B5D7BC /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Document.swift";
+				sourceTree = "<group>";
+		};
+		212938678553E862E6F17388 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "DocumentType.swift";
+				sourceTree = "<group>";
+		};
+		7CC428705E0026FF57F0B8E5 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Element.swift";
+				sourceTree = "<group>";
+		};
+		90F2432D44C5E82DE27945F2 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ElementQuery.swift";
+				sourceTree = "<group>";
+		};
+		B1ECB93BAAFC28F93A0C14F1 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Elements.swift";
+				sourceTree = "<group>";
+		};
+		D6ED59E291D7CB58A3C36178 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Entities.swift";
+				sourceTree = "<group>";
+		};
+		05DCCD8730D0A28100287B20 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Evaluator.swift";
+				sourceTree = "<group>";
+		};
+		2008DCB16BE54C3691105C70 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Exception.swift";
+				sourceTree = "<group>";
+		};
+		0223B73597E6A3DD6A0AA253 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "FormElement.swift";
+				sourceTree = "<group>";
+		};
+		842B9F46C20B655D9CB82A6E /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "HtmlTreeBuilder.swift";
+				sourceTree = "<group>";
+		};
+		884E9D22108E3A705CFDB133 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "HtmlTreeBuilderState.swift";
+				sourceTree = "<group>";
+		};
+		F6B5D67F96E8803873653A6D /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "LRUCache.swift";
+				sourceTree = "<group>";
+		};
+		741B6C19840537C1E39EF723 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Mutex.swift";
+				sourceTree = "<group>";
+		};
+		C9C267170A1A04AA022A211C /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Node.swift";
+				sourceTree = "<group>";
+		};
+		50C4ACCEC5756DB3CED7EEFE /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "NodeTraversor.swift";
+				sourceTree = "<group>";
+		};
+		1296C19904F9B0444D8AE7A1 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "NodeVisitor.swift";
+				sourceTree = "<group>";
+		};
+		0C1200A2EF4E8BB7042CF652 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "OrderedSet.swift";
+				sourceTree = "<group>";
+		};
+		44206A5130C4F9386E7A2D6D /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ParseError.swift";
+				sourceTree = "<group>";
+		};
+		92B5482312F1E7B67CF9EE52 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ParseErrorList.swift";
+				sourceTree = "<group>";
+		};
+		0AAD2FE84851106BAF87D8CF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ParseSettings.swift";
+				sourceTree = "<group>";
+		};
+		43829182915B7EDF2A988175 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Parser.swift";
+				sourceTree = "<group>";
+		};
+		B61215668552303F0F31A2EF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "ParsingStrings.swift";
+				sourceTree = "<group>";
+		};
+		B60ABAD1E02DEFD3C3D9B869 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Pattern.swift";
+				sourceTree = "<group>";
+		};
+		2BC9721599F24BAB9F022862 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Profiler.swift";
+				sourceTree = "<group>";
+		};
+		5E8C1D598370A62DB8246757 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "QueryParser.swift";
+				sourceTree = "<group>";
+		};
+		1222609A6944CD4DBDA80F10 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "QueryParserCache.swift";
+				sourceTree = "<group>";
+		};
+		AFADE3E17A32155D73C05944 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SelectorQueryKey.swift";
+				sourceTree = "<group>";
+		};
+		3268B9DADF8EA79F5C9B0165 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SourceRange.swift";
+				sourceTree = "<group>";
+		};
+		26226AC4A561F57F4FD2D272 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "StreamReader.swift";
+				sourceTree = "<group>";
+		};
+		D8392AA05CD7CCA477DDF9F7 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "String.swift";
+				sourceTree = "<group>";
+		};
+		34ED3306FD83BDB7B1817C50 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "StringBuilder.swift";
+				sourceTree = "<group>";
+		};
+		A3EB810E75CF976C22542D52 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "StringUtil.swift";
+				sourceTree = "<group>";
+		};
+		F0524B5C5F34AFAF436BE49F /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "StructuralEvaluator.swift";
+				sourceTree = "<group>";
+		};
+		A2AD603687F4336A948AF917 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "SwiftSoup.swift";
+				sourceTree = "<group>";
+		};
+		799B57CBF1680CC6429C26A8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Tag.swift";
+				sourceTree = "<group>";
+		};
+		DF8602BE0DC9402BB2CDE5A8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "TextNode.swift";
+				sourceTree = "<group>";
+		};
+		275D734A6EB08FD0B10F86BA /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Token.swift";
+				sourceTree = "<group>";
+		};
+		555976C76F10E6890364FC83 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "TokenQueue.swift";
+				sourceTree = "<group>";
+		};
+		A72AE8C44DDC0EBB53582440 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Tokeniser.swift";
+				sourceTree = "<group>";
+		};
+		8E2E58E73CC88FF6A0DD232B /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "TokeniserState.swift";
+				sourceTree = "<group>";
+		};
+		2DB4D04521F79C88AA41F9A0 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "TreeBuilder.swift";
+				sourceTree = "<group>";
+		};
+		ABC332233348C09A90A719C8 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "UTF8Arrays.swift";
+				sourceTree = "<group>";
+		};
+		075E9F1875EED9CE600FF538 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "UnicodeScalar.swift";
+				sourceTree = "<group>";
+		};
+		CCA408B305450DE1080E1C3A /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Validate.swift";
+				sourceTree = "<group>";
+		};
+		3B702A83BBB5BD9FAE60040D /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "Whitelist.swift";
+				sourceTree = "<group>";
+		};
+		55108742AA3027D4CDA5338D /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "XmlDeclaration.swift";
+				sourceTree = "<group>";
+		};
+		87D7271B11409E49C80285E4 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "XmlTreeBuilder.swift";
+				sourceTree = "<group>";
+		};
+		B610FCE336EEB5E8D662A2DE /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "sourcecode.swift";
+				path = "_Compat.swift";
+				sourceTree = "<group>";
+		};
+		3F48DF4F3860AD99D8ED0721 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "folder.assetcatalog";
+				path = "Assets.xcassets";
+				sourceTree = "<group>";
+		};
+		E11324A5BC4F0A7FA438F642 /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "text.plist.xml";
+				path = "Info.plist";
+				sourceTree = "<group>";
+		};
+		21410B1FBCA5187CA2A53F9B /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				explicitFileType = "wrapper.application";
+				includeInIndex = 0;
+				path = "LegadoIOS.app";
+				sourceTree = "BUILT_PRODUCTS_DIR";
+		};
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		8B0FD1FEFAA402C496553965 /* PBXFrameworksBuildPhase */ = {
+			isa = PBXFrameworksBuildPhase;
+				buildActionMask = 2147483647;
+				files = ();
+				runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		C71A71191F9976F1EC815A31 /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (39C3C8CB3433A7F1BECD0F7B, 8896EF044437FE117945F1FF, 12C3545920A027EDA7AA1419, 675450C483BDFF622E325D49, EC9E9487B109E0286187E322, F2B1EAE0FAA3E6A705FC0381, F52826D35CBB5E1E55658490, 20F97CED0908F13F75FD3653, B2FEB1E5BE26F27054FC9998);
+				sourceTree = "<group>";
+				path = "UI";
+				name = "UI";
+		};
+		EA8278ECEF371E47644F5F5D /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (A7264C2DD0840ED4ACAD18AD, 7570E5C94A93EFFFF484E9C8);
+				sourceTree = "<group>";
+				path = "App";
+				name = "App";
+		};
+		2ABAD0F09CBB46B363996750 /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (09F3A6C28AC461D4B7D9DA60, 7DC7739C42865C46114E3ED8, FEB2AD6009993CEB3C2784FF, 82628A5E1FB673A348134E6E, F5A6C76D75CEE98FAC69432F, A437A4BF7C1CA87B8730CDD6, 3C074FF7A5CD76AB4D9DA7FA, D54D00A388FDEA090E65D01C, AB4CD7FF932F3AF7F516E1FA, 292C5C847958365DCE0D9184, 6B5988DA76EB8082A9C7C548, 39650639A84609ADD33C4308, 4BEC3B2570CCD0AB026491B2);
+				sourceTree = "<group>";
+				path = "Core";
+				name = "Core";
+		};
+		37B3D4F72BFCF39B0A31BD7E /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (8B22BCE4E4592B768186B2BE, 8BF876B316BCA4264D474CED);
+				sourceTree = "<group>";
+				path = "Models";
+				name = "Models";
+		};
+		C02BE5792510DDEC3D13C3DC /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (3F48DF4F3860AD99D8ED0721, E11324A5BC4F0A7FA438F642);
+				sourceTree = "<group>";
+				path = "Resources";
+				name = "Resources";
+		};
+		3FAB2D33F3CAD99AD71D3E1C /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (8236CFDED8437FD80EF223F8, B0B4CBD30A03848AFF15C816, 87B03D788E64C1F650989A63, A757DEC083E97607D1F3A9D4, A2687340D5109401DAA5D3BD, 534B7427AB0BC64994EE223F, F9B8E3CDBF313DD477EA62D8, 4D1DFAC858A5E8FF8BA305EF, 60535FEC337F83C8AD001968, C894C03EEC704F09517D1BDA, 495EF1E78D0CD920AF74C1E2, 3DE8947941D6AA5B66517107, D5EBD2757422B7380BA81752, 0007E0DCEDDC846A93BDC89A, EA8D5F03331A7FEA65730DD0, 357D9675E8E962F426B5D7BC, 212938678553E862E6F17388, 7CC428705E0026FF57F0B8E5, 90F2432D44C5E82DE27945F2, B1ECB93BAAFC28F93A0C14F1, D6ED59E291D7CB58A3C36178, 05DCCD8730D0A28100287B20, 2008DCB16BE54C3691105C70, 0223B73597E6A3DD6A0AA253, 842B9F46C20B655D9CB82A6E, 884E9D22108E3A705CFDB133, F6B5D67F96E8803873653A6D, 741B6C19840537C1E39EF723, C9C267170A1A04AA022A211C, 50C4ACCEC5756DB3CED7EEFE, 1296C19904F9B0444D8AE7A1, 0C1200A2EF4E8BB7042CF652, 44206A5130C4F9386E7A2D6D, 92B5482312F1E7B67CF9EE52, 0AAD2FE84851106BAF87D8CF, 43829182915B7EDF2A988175, B61215668552303F0F31A2EF, B60ABAD1E02DEFD3C3D9B869, 2BC9721599F24BAB9F022862, 5E8C1D598370A62DB8246757, 1222609A6944CD4DBDA80F10, AFADE3E17A32155D73C05944, 3268B9DADF8EA79F5C9B0165, 26226AC4A561F57F4FD2D272, D8392AA05CD7CCA477DDF9F7, 34ED3306FD83BDB7B1817C50, A3EB810E75CF976C22542D52, F0524B5C5F34AFAF436BE49F, A2AD603687F4336A948AF917, 799B57CBF1680CC6429C26A8, DF8602BE0DC9402BB2CDE5A8, 275D734A6EB08FD0B10F86BA, 555976C76F10E6890364FC83, A72AE8C44DDC0EBB53582440, 8E2E58E73CC88FF6A0DD232B, 2DB4D04521F79C88AA41F9A0, ABC332233348C09A90A719C8, 075E9F1875EED9CE600FF538, CCA408B305450DE1080E1C3A, 3B702A83BBB5BD9FAE60040D, 55108742AA3027D4CDA5338D, 87D7271B11409E49C80285E4, B610FCE336EEB5E8D662A2DE);
+				sourceTree = "<group>";
+				path = "SwiftSoup";
+				name = "SwiftSoup";
+		};
+		C8E20D35F5170BBDAAEFD578 /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (3FAB2D33F3CAD99AD71D3E1C);
+				sourceTree = "<group>";
+				path = "Vendor";
+				name = "Vendor";
+		};
+		955E037808BE7A24E5F57842 /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (EA8278ECEF371E47644F5F5D, 2ABAD0F09CBB46B363996750, 37B3D4F72BFCF39B0A31BD7E, C71A71191F9976F1EC815A31, C02BE5792510DDEC3D13C3DC);
+				sourceTree = "<group>";
+				path = "LegadoIOS";
+				name = "LegadoIOS";
+		};
+		A61C702DC139102129645A77 /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (21410B1FBCA5187CA2A53F9B);
+				sourceTree = "<group>";
+				name = "Products";
+		};
+		C7BC6BB948CD4CD2EC7CE02C /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (955E037808BE7A24E5F57842, C8E20D35F5170BBDAAEFD578, A61C702DC139102129645A77);
+				sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		1049070146BD99B9B07E8838 /* PBXNativeTarget */ = {
+			isa = PBXNativeTarget;
+				buildConfigurationList = 2DD20A56BD067D7C9E7E48FD;
+				buildPhases = (47768B24835831F86B97D4D5, 8B0FD1FEFAA402C496553965, BC89074D8BD49D7C975D5B76);
+				buildRules = ();
+				dependencies = ();
+				name = "LegadoIOS";
+				productName = "LegadoIOS";
+				productReference = 21410B1FBCA5187CA2A53F9B;
+				productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		6DFED30A0662033CE0AB3F82 /* PBXProject */ = {
+			isa = PBXProject;
+				attributes = { BuildIndependentTargetsInParallel = "YES"; LastSwiftUpdateCheck = "1500"; LastUpgradeCheck = "1500"; TargetAttributes = {  }; };
+				buildConfigurationList = D54CB9CD7EF963DA0FF6CED7;
+				compatibilityVersion = "Xcode 14.0";
+				developmentRegion = "zh-Hans";
+				hasScannedForEncodings = "0";
+				knownRegions = ("en", "Base", "zh-Hans");
+				mainGroup = C7BC6BB948CD4CD2EC7CE02C;
+				productRefGroup = A61C702DC139102129645A77;
+				projectDirPath = "";
+				projectRoot = "";
+				targets = (1049070146BD99B9B07E8838);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		BC89074D8BD49D7C975D5B76 /* PBXResourcesBuildPhase */ = {
+			isa = PBXResourcesBuildPhase;
+				buildActionMask = 2147483647;
+				files = (B50ACB6EBA06AF96EA4D5646);
+				runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		47768B24835831F86B97D4D5 /* PBXSourcesBuildPhase */ = {
+			isa = PBXSourcesBuildPhase;
+				buildActionMask = 2147483647;
+				files = (67ACC637D4105D2545BF03AF, 30A9F4D76746063D7CB41057, 29CAD792186AF2F8E08FBFC9, 45356450067EE6EE68D4A0E3, F90C773C3DC4B042BBD4E21C, 58A5A41B1EB0F904E50257E2, 25929009E17A5B4FACD4541F, 688D2D2F553EA712D1005ACA, F74E57B24E2FC4C18E32E778, 2EE3C32D845D1A2E38B6FCF4, 08CC4B5702E894D163155C53, 07CE135469E536BAB758C4A7, D50247BAAD2821253A36B752, B3283E851E6AEAEED9C03B36, E0DB19370055740ABD1FFB20, D8CEA1672EDD57C92C7E32B4, DF871D18B45F98C2499F4B45, DB8FB76967224FA9AA81233F, 876BE1B7FA308006C7B5652F, 7377502E76898FCDF383C2E8, EFFAC2513E55C9A3CD6D3731, C263B893F309ECDC965A1E55, 296D9A1550DFF84267F86DB1, 2B8DE1CF0F9A50901870D1FF, D32C83CC6C4D1D0EA6D45320, 3709236786299B51A0C08DBB, E96F9A3C6203EBC6BCA9E850, 91A3746AD89209BE5B3C0004, CC4E104E2C33CB47311113D8, 4222076161C53A3682B146DB, 5858457A25E83B5B8CFAED9F, 4B67951530521794C486C49A, D1B6632259DB26A45996679C, C566F9BDCE2DAA17AACAE45A, 2C268DF128D3F028DBBAC6EE, 9EA59729759EE2800D5CE9FF, A227448CDC09A1EC5ACE9538, 80CF215C1326AB0AAB7E5BC0, 4B9573DE6FCCB6500C765B8E, 9F8F66BB90E45F3BA90074A9, 7AF03A2929474845B50FD10B, F86C07A9BA5675ACA8F5C9DF, F56D942FFD03698F1B1FF651, E8739BCD3BDD4101BCE8CC4C, B1CED68BD6B2D68B29FC013B, A25C2F877EC703DADC943026, 0E42DFA41BCBA0DA88A279FE, 80AB6D5DBE60542E5BBAA38B, B11638BD3D5A0CEB22F7A83F, 41AED8131B8315A995D96C69, 7AB0FFEAE84EF2F1A7F9A636, 3747CF190F5DC15612B6BBC6, A17B48D3A0D668BDCC8B4470, 9314CF4D3800BBD0CC77FCA3, 2718C965E9B71B5385BC8F81, 22BD0B466692B0B53BE53BF5, E015562ABD155E5C61FDBE2E, 221A71499C54417EF133A774, CA9A9FF68606EF8AF280D989, F5ED30CAF197E6B686A4B92D, 6D5A1D638DA9AC78027EDC39, 62CA54823A8906437C5C2496, CDEFA8861BACCF9A972F5E58, 96FD8EC755DA9D3E5AC5425B, A8C7D997F73E42A6DA71006A, F67E2D54DB204588357D654A, 22DAD92ACB0576EDF7BD5AB5, 73CC9A747F34CDBD629933BE, A81CAC70A59314CE30749642, 17CDEA22FCF27DE9EE0AFCF2, 6A88BB33F7AD3E9AAEEF07C3, 5D3D4DA755D042DD4C12DCE0, 6042591590F1724824012BF6, 3ABB7F93569AF90B1B1E4288, DF20B5DF3E9833DBE10E7F45, 880ABD052457E6388787DAED, 128E88BCF8CE95D3F13BA233, 84DADB6B6FF9C3FB909F25A6, A33FAD016D814089009B8CE0, 4983172D643B5D7BA3B5D291, 3A07842F260C61952064C098, 260EF84C94112742BF5A1EBC, 9134F77F833F595C72B8CD75, B4C7E3110F2F12CD4C86F563, E1F14A7858DAA72DBE3FAB12, 29BD58455E6B3E90406ABE4D, B41598A7BBD0EC3F267B7C0A, 97EB0244BF9CD21FB73DDBB6, 96504D4098D7CAD7CA29DDDE);
+				runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		3A3051940CAF47404D5E043D /* XCBuildConfiguration */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = { ALWAYS_SEARCH_USER_PATHS = "NO"; CLANG_ANALYZER_NONNULL = "YES"; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = "YES"; CLANG_ENABLE_OBJC_ARC = "YES"; CLANG_WARN_BOOL_CONVERSION = "YES"; CLANG_WARN_DOCUMENTATION_COMMENTS = "YES"; CLANG_WARN_EMPTY_BODY = "YES"; CLANG_WARN_UNREACHABLE_CODE = "YES"; COPY_PHASE_STRIP = "NO"; ENABLE_STRICT_OBJC_MSGSEND = "YES"; GCC_C_LANGUAGE_STANDARD = "gnu17"; GCC_NO_COMMON_BLOCKS = "YES"; GCC_WARN_UNDECLARED_SELECTOR = "YES"; GCC_WARN_UNINITIALIZED_AUTOS = "YES"; GCC_WARN_UNUSED_FUNCTION = "YES"; GCC_WARN_UNUSED_VARIABLE = "YES"; MTL_FAST_MATH = "YES"; SDKROOT = "iphoneos"; SWIFT_EMIT_LOC_STRINGS = "NO"; DEBUG_INFORMATION_FORMAT = "dwarf"; ENABLE_TESTABILITY = "YES"; GCC_OPTIMIZATION_LEVEL = "0"; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); IPHONEOS_DEPLOYMENT_TARGET = "16.0"; MTL_ENABLE_DEBUG_INFO = "INCLUDE_SOURCE"; ONLY_ACTIVE_ARCH = "YES"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; };
+				name = "Debug";
+		};
+		18F92002A18122D7B361211B /* XCBuildConfiguration */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = { ALWAYS_SEARCH_USER_PATHS = "NO"; CLANG_ANALYZER_NONNULL = "YES"; CLANG_CXX_LANGUAGE_STANDARD = "gnu++20"; CLANG_ENABLE_MODULES = "YES"; CLANG_ENABLE_OBJC_ARC = "YES"; CLANG_WARN_BOOL_CONVERSION = "YES"; CLANG_WARN_DOCUMENTATION_COMMENTS = "YES"; CLANG_WARN_EMPTY_BODY = "YES"; CLANG_WARN_UNREACHABLE_CODE = "YES"; COPY_PHASE_STRIP = "NO"; ENABLE_STRICT_OBJC_MSGSEND = "YES"; GCC_C_LANGUAGE_STANDARD = "gnu17"; GCC_NO_COMMON_BLOCKS = "YES"; GCC_WARN_UNDECLARED_SELECTOR = "YES"; GCC_WARN_UNINITIALIZED_AUTOS = "YES"; GCC_WARN_UNUSED_FUNCTION = "YES"; GCC_WARN_UNUSED_VARIABLE = "YES"; MTL_FAST_MATH = "YES"; SDKROOT = "iphoneos"; SWIFT_EMIT_LOC_STRINGS = "NO"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = "NO"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; MTL_ENABLE_DEBUG_INFO = "NO"; SWIFT_COMPILATION_MODE = "wholemodule"; SWIFT_OPTIMIZATION_LEVEL = "-O"; VALIDATE_PRODUCT = "YES"; };
+				name = "Release";
+		};
+		EC79B1BF538F037C1A3D3CA9 /* XCBuildConfiguration */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "1"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "1.0"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf"; ENABLE_TESTABILITY = "YES"; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); ONLY_ACTIVE_ARCH = "YES"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; };
+				name = "Debug";
+		};
+		238B85A8F746F8F4CE798278 /* XCBuildConfiguration */ = {
+			isa = XCBuildConfiguration;
+				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "1"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "1.0"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = "NO"; SWIFT_COMPILATION_MODE = "wholemodule"; VALIDATE_PRODUCT = "YES"; };
+				name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		D54CB9CD7EF963DA0FF6CED7 /* XCConfigurationList */ = {
+			isa = XCConfigurationList;
+				buildConfigurations = (3A3051940CAF47404D5E043D, 18F92002A18122D7B361211B);
+				defaultConfigurationIsVisible = 0;
+				defaultConfigurationName = "Release";
+		};
+		2DD20A56BD067D7C9E7E48FD /* XCConfigurationList */ = {
+			isa = XCConfigurationList;
+				buildConfigurations = (EC79B1BF538F037C1A3D3CA9, 238B85A8F746F8F4CE798278);
+				defaultConfigurationIsVisible = 0;
+				defaultConfigurationName = "Release";
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 6DFED30A0662033CE0AB3F82;
+}

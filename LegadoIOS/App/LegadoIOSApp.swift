@@ -1,0 +1,14 @@
+import SwiftUI
+
+@main
+struct LegadoIOSApp: App {
+    @StateObject private var model = AppModel()
+
+    var body: some Scene {
+        WindowGroup {
+            RootView()
+                .environmentObject(model)
+                .preferredColorScheme(model.readerConfig.theme.isDark ? .dark : nil)
+        }
+    }
+}
