@@ -18,14 +18,14 @@ struct MyConfigView: View {
                     searchField
 
                     group("内容与规则") {
-                        link("书源管理", "\(model.sources.count) 个") { SourceListView() }
+                        row("书源管理", detail: "\(model.sources.count) 个") { sheet = .sources }
                         row("导入书源") { showSourceImport = true }
-                        link("替换净化", "\(model.replaceRules.count) 条") { ReplaceRulesView() }
+                        row("替换净化", detail: "\(model.replaceRules.count) 条") { sheet = .rules }
                         row("导入本地 TXT") { showImporter = true }
                     }
 
                     group("外观与 AI") {
-                        link("主题与排版", appAppearance) { SettingsView() }
+                        row("主题与排版", detail: appAppearance) { sheet = .settings }
                         appearanceRow
                     }
 
@@ -56,6 +56,13 @@ struct MyConfigView: View {
             .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $showSourceImport) { SourceImportView() }
+        .sheet(item: $sheet) { item in
+            switch item {
+            case .sources: SourceListView()
+            case .rules: ReplaceRulesView()
+            case .settings: SettingsView()
+            }
+        }
         .sheet(isPresented: $showImporter) {
             DocumentPicker { url in
                 showImporter = false
@@ -78,6 +85,19 @@ struct MyConfigView: View {
     }
 
     @State private var showImporter = false
+    @State private var sheet: MySheet?
+
+    private enum MySheet: Identifiable {
+        case sources, rules, settings
+
+        var id: Int {
+            switch self {
+            case .sources: return 0
+            case .rules: return 1
+            case .settings: return 2
+            }
+        }
+    }
 
     private var searchField: some View {
         HStack(spacing: 8) {
@@ -142,33 +162,6 @@ struct MyConfigView: View {
                         .font(.system(size: 14))
                         .foregroundColor(LegadoTheme.secondaryText(scheme))
                         .lineLimit(1)
-                }
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(LegadoTheme.tertiaryText(scheme))
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .frame(minHeight: 60)
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-    }
-
-    private func link<Destination: View>(_ title: String, _ detail: String? = nil,
-                                         @ViewBuilder destination: @escaping () -> Destination) -> some View {
-        NavigationLink {
-            destination()
-        } label: {
-            HStack {
-                Text(title)
-                    .font(.system(size: 16))
-                    .foregroundColor(LegadoTheme.primaryText(scheme))
-                Spacer()
-                if let detail = detail {
-                    Text(detail)
-                        .font(.system(size: 14))
-                        .foregroundColor(LegadoTheme.secondaryText(scheme))
                 }
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .medium))

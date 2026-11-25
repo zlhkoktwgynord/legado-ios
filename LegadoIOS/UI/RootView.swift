@@ -11,8 +11,33 @@ enum Route: Hashable {
 /// 五页横向分页（书架 / 发现 / 订阅 / 阅读记录 / 我的）
 /// + 底部 48pt 悬浮毛玻璃导航栏（5 个 23pt 图标 + 切换时闪现的 52×40 指示器）
 /// + 右下角 48pt 圆形搜索按钮
+/// 主界面底栏的显隐状态：二级页面（详情/阅读/设置）里要收起来
+@MainActor
+final class HomeChrome: ObservableObject {
+    /// 当前压在主界面之上的页面层数
+    @Published var depth = 0
+
+    var barHidden: Bool { depth > 0 }
+}
+
+/// 二级页面出现时把底栏收起来
+struct HidesHomeBar: ViewModifier {
+    @EnvironmentObject private var chrome: HomeChrome
+
+    func body(content: Content) -> some View {
+        content
+            .onAppear { chrome.depth += 1 }
+            .onDisappear { chrome.depth = max(0, chrome.depth - 1) }
+    }
+}
+
+extension View {
+    func hidesHomeBar() -> some View { modifier(HidesHomeBar()) }
+}
+
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
+    @EnvironmentObject private var chrome: HomeChrome
     @Environment(\.colorScheme) private var scheme
 
     @State private var tab: Int = RootView.initialTab
@@ -42,6 +67,9 @@ struct RootView: View {
             .ignoresSafeArea(edges: .bottom)
 
             bottomBar
+                .opacity(chrome.depth > 0 ? 0 : 1)
+                .allowsHitTesting(chrome.depth == 0)
+                .animation(.easeOut(duration: 0.15), value: chrome.depth)
         }
         .fullScreenCover(isPresented: $showSearch) {
             SearchView()
@@ -177,6 +205,12 @@ struct RouteView: View {
     let route: Route
 
     var body: some View {
+        content
+            .hidesHomeBar()
+    }
+
+    @ViewBuilder
+    private var content: some View {
         switch route {
         case .detail(let book):
             BookDetailView(book: book)
