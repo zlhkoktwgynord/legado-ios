@@ -1,5 +1,29 @@
 import SwiftUI
 
+/// 「发现」页：搜索 + 书源管理入口
+struct DiscoverView: View {
+    @EnvironmentObject private var model: AppModel
+    @State private var path = NavigationPath()
+
+    var body: some View {
+        NavigationStack(path: $path) {
+            SearchView()
+                .navigationDestination(for: Route.self) { route in
+                    RouteView(route: route)
+                }
+                .toolbar {
+                    ToolbarItem(placement: .navigationBarTrailing) {
+                        NavigationLink {
+                            SourceListView()
+                        } label: {
+                            Image(systemName: "square.stack.3d.up")
+                        }
+                    }
+                }
+        }
+    }
+}
+
 struct SearchView: View {
     @EnvironmentObject private var model: AppModel
 
@@ -11,19 +35,17 @@ struct SearchView: View {
     @FocusState private var focused: Bool
 
     var body: some View {
-        NavigationStack(path: $path) {
-            VStack(spacing: 0) {
-                searchBar
-                Divider()
-                content
-            }
-            .navigationTitle("搜索")
-            .navigationBarTitleDisplayMode(.inline)
-            .navigationDestination(for: Route.self) { route in
-                RouteView(route: route)
-            }
-            .onDisappear { searchTask?.cancel() }
+        VStack(spacing: 0) {
+            searchBar
+            Divider()
+            content
         }
+        .navigationTitle("发现")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationDestination(for: Route.self) { route in
+            RouteView(route: route)
+        }
+        .onDisappear { searchTask?.cancel() }
     }
 
     // MARK: - 搜索框

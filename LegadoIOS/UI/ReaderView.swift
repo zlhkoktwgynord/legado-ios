@@ -33,7 +33,7 @@ struct ReaderView: View {
     var body: some View {
         GeometryReader { geo in
             let width = max(120, geo.size.width - CGFloat(config.padding) * 2)
-            let height = max(160, geo.size.height - 96)
+            let height = max(160, geo.size.height - 76)
 
             ZStack {
                 Color(hex: theme.backgroundHex).ignoresSafeArea()
@@ -43,14 +43,6 @@ struct ReaderView: View {
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
                     .gesture(tapGesture(width: width))
                     .simultaneousGesture(swipeGesture)
-
-                pageHeader
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                    .allowsHitTesting(false)
-
-                pageFooter
-                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
-                    .allowsHitTesting(false)
 
                 if showChrome {
                     chrome
@@ -70,6 +62,7 @@ struct ReaderView: View {
         }
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
+        .toolbar(.hidden, for: .tabBar)
         .onDisappear { saveProgress() }
         .sheet(isPresented: $showChapterList) {
             ChapterPickerView(chapters: chapters, currentIndex: currentIndex) { index in
@@ -135,44 +128,6 @@ struct ReaderView: View {
         .transition(.opacity)
     }
 
-    private var pageHeader: some View {
-        HStack(spacing: 8) {
-            Text(chapterTitle)
-                .font(.system(size: 11))
-                .lineLimit(1)
-            Spacer()
-            Text(book.name)
-                .font(.system(size: 11))
-                .lineLimit(1)
-        }
-        .foregroundColor(textColor.opacity(0.45))
-        .padding(.horizontal, CGFloat(config.padding))
-        .padding(.top, 10)
-    }
-
-    private var pageFooter: some View {
-        TimelineView(.everyMinute) { context in
-            HStack(spacing: 8) {
-                Text(timeText(context.date))
-                Spacer()
-                if !pages.isEmpty {
-                    Text("\(pageIndex + 1)/\(pages.count)")
-                    Text(progressText)
-                }
-            }
-            .font(.system(size: 10))
-            .foregroundColor(textColor.opacity(0.45))
-            .padding(.horizontal, CGFloat(config.padding))
-            .padding(.bottom, 12)
-        }
-    }
-
-    private func timeText(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: date)
-    }
-
     private var topBar: some View {
         HStack(spacing: 12) {
             Button {
@@ -202,8 +157,8 @@ struct ReaderView: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 10) {
-            HStack(spacing: 10) {
+        VStack(spacing: 12) {
+            HStack(spacing: 8) {
                 Button {
                     load(index: currentIndex - 1)
                 } label: {
@@ -211,8 +166,11 @@ struct ReaderView: View {
                 }
                 .disabled(currentIndex <= 0)
 
-                Slider(value: chapterBinding, in: 0...Double(max(chapters.count - 1, 1)), step: 1)
+                Slider(value: pageBinding,
+                       in: 0...Double(max(pages.count - 1, 1)),
+                       step: 1)
                     .tint(textColor.opacity(0.8))
+                    .disabled(pages.isEmpty)
 
                 Button {
                     load(index: currentIndex + 1)
@@ -230,9 +188,9 @@ struct ReaderView: View {
                     model.readerConfig.theme = theme.isDark ? .paper : .dark
                     model.saveReaderConfig()
                 }
-                barButton("设置", "gearshape") { showSettings = true }
             }
         }
+        .foregroundColor(textColor)
         .padding(.horizontal, 16)
         .padding(.top, 10)
         .padding(.bottom, 16)
@@ -251,13 +209,20 @@ struct ReaderView: View {
         }
     }
 
-    private var chapterBinding: Binding<Double> {
+    private var pageBinding: Binding<Double> {
         Binding(
-            get: { Double(currentIndex) },
+            get: { Double(pageIndex) },
             set: { value in
-                let index = Int(value.rounded())
-                if index != currentIndex { load(index: index) }
+                let target = Int(value.rounded())
+                guard !pages.isEmpty else { return }
+                pageIndex = min(max(0, target), pages.count - 1)
+                saveProgress()
             })
+    }
+
+    private var pageText: String {
+        guard !pages.isEmpty else { return "" }
+        return "\(pageIndex + 1)/\(pages.count)"
     }
 
     private var chapterTitle: String {

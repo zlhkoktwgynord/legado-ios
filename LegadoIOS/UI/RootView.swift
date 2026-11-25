@@ -19,12 +19,9 @@ struct RootView: View {
             BookshelfView(selectedTab: $tab)
                 .tabItem { Label("书架", systemImage: "books.vertical") }
                 .tag(0)
-            SearchView()
-                .tabItem { Label("搜索", systemImage: "magnifyingglass") }
+            DiscoverView()
+                .tabItem { Label("发现", systemImage: "safari") }
                 .tag(1)
-            SourceListView()
-                .tabItem { Label("书源", systemImage: "square.stack.3d.up") }
-                .tag(2)
         }
     }
 }

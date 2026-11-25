@@ -123,7 +123,7 @@ struct BookshelfView: View {
                             : "在「搜索」里找到喜欢的书，加入书架")
             VStack(spacing: 10) {
                 Button {
-                    selectedTab = model.sources.isEmpty ? 2 : 1
+                    selectedTab = 1
                 } label: {
                     Text(model.sources.isEmpty ? "导入书源" : "去搜索")
                         .frame(maxWidth: 220)
