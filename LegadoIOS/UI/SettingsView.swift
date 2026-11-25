@@ -55,6 +55,35 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle("iCloud 同步", isOn: Binding(
+                        get: { model.cloudEnabled },
+                        set: { model.setCloudEnabled($0) }))
+                        .disabled(!model.cloudAvailable)
+                    if model.cloudEnabled {
+                        Button("立即同步") { model.syncNow() }
+                        if let date = model.lastSyncAt {
+                            Text("上次同步：\(date.formatted(date: .abbreviated, time: .shortened))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        if let message = model.syncMessage {
+                            Text(message)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    if !model.cloudAvailable {
+                        Text("当前环境不可用：需要付费开发者账号签名并开启 iCloud 能力（免费证书不支持）。")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                } header: {
+                    Text("iCloud 同步")
+                } footer: {
+                    Text("同步书源、书架与阅读进度、排版和净化规则；不包含正文缓存。")
+                }
+
+                Section {
                     if let url = backupURL {
                         ShareLink(item: url) {
                             Label("导出备份", systemImage: "square.and.arrow.up")

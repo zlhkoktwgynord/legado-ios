@@ -63,6 +63,24 @@ open LegadoIOS.xcodeproj
 工程里没有任何第三方二进制依赖：HTML 解析用的是随仓库附带的
 [SwiftSoup](https://github.com/scinfu/SwiftSoup) 源码（MIT），JS 用系统的 JavaScriptCore。
 
+## iCloud 同步（需要付费开发者账号）
+
+设置 →「iCloud 同步」会把**书源、书架与阅读进度、排版和净化规则**写进
+`NSUbiquitousKeyValueStore`，同一 Apple ID 的设备之间自动同步（启动拉取、退到后台推送）。
+
+限制与前提：
+
+- 需要 App 带 `com.apple.developer.ubiquity-kvstore-identifier` entitlement，
+  而 iCloud 能力**只对付费 Apple Developer Program 账号开放**；
+- 免费证书自签的包没有这个能力，开关会置灰（`ubiquityIdentityToken` 为 nil），
+  不影响其他功能；
+- 用 Xcode 打开工程 → Signing & Capabilities → 添加 iCloud → 勾选 Key-value storage，
+  选自己的 Team 编译即可；
+- 数据上限 1MB，书源很多时会超，超了会提示改用备份文件。
+
+`LegadoIOS/Resources/LegadoIOS.entitlements` 是给签名工具用的模板，
+自签工具如果支持「注入 entitlements」可以填这个文件，但仍要求证书本身带 iCloud 能力。
+
 ## 首次使用
 
 1. 进入「书源」→ 导入书源（网络上有很多「阅读 3.0 书源」合集 JSON）

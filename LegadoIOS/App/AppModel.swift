@@ -13,6 +13,9 @@ final class AppModel: ObservableObject {
     @Published var bookmarks: [Bookmark] = []
     /// 0 跟随系统 1 浅色 2 深色
     @Published var appearance: Int = UserDefaults.standard.integer(forKey: "appearance")
+    @Published var cloudEnabled: Bool = UserDefaults.standard.bool(forKey: "cloudSyncEnabled")
+    @Published var lastSyncAt: Date?
+    @Published var syncMessage: String?
 
     private let sourcesFile = "sources.json"
     private let booksFile = "books.json"
@@ -22,6 +25,7 @@ final class AppModel: ObservableObject {
 
     init() {
         load()
+        CloudSyncService.shared.start(model: self)
     }
 
     // MARK: - 读写
@@ -42,10 +46,12 @@ final class AppModel: ObservableObject {
 
     func saveSources() {
         Storage.saveJSON(sources, sourcesFile)
+        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func saveBooks() {
         Storage.saveJSON(books, booksFile)
+        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func setAppearance(_ value: Int) {
@@ -55,6 +61,7 @@ final class AppModel: ObservableObject {
 
     func saveReaderConfig() {
         Storage.saveReaderConfig(readerConfig)
+        CloudSyncService.shared.schedulePush(model: self)
     }
 
     // MARK: - 书源
@@ -107,6 +114,46 @@ final class AppModel: ObservableObject {
         let targets = offsets.map { list[$0].bookSourceUrl }
         sources.removeAll { targets.contains($0.bookSourceUrl) }
         saveSources()
+    }
+
+    // MARK: - 云同步
+
+    var cloudAvailable: Bool { CloudSyncService.shared.isAvailable }
+
+    func setCloudEnabled(_ enabled: Bool) {
+        cloudEnabled = enabled
+        CloudSyncService.shared.setEnabled(enabled, model: self)
+    }
+
+    func syncNow() {
+        CloudSyncService.shared.syncNow(model: self)
+    }
+
+    /// 应用云端数据（合并，不覆盖本地更新的阅读进度）
+    func applyRemote(_ payload: BackupPayload) {
+        var sourceMap = Dictionary(uniqueKeysWithValues: sources.map { ($0.bookSourceUrl, $0) })
+        for item in payload.sources { sourceMap[item.bookSourceUrl] = item }
+        sources = Array(sourceMap.values).sorted { $0.customOrder < $1.customOrder }
+
+        var bookMap = Dictionary(uniqueKeysWithValues: books.map { ($0.bookUrl, $0) })
+        for item in payload.books {
+            if let local = bookMap[item.bookUrl] {
+                if item.durChapterTime > local.durChapterTime { bookMap[item.bookUrl] = item }
+            } else {
+                bookMap[item.bookUrl] = item
+            }
+        }
+        books = Array(bookMap.values)
+
+        bookmarks = payload.bookmarks
+        replaceRules = payload.replaceRules
+        readerConfig = payload.readerConfig
+
+        Storage.saveJSON(sources, sourcesFile)
+        Storage.saveJSON(books, booksFile)
+        Storage.saveJSON(bookmarks, bookmarkFile)
+        Storage.saveJSON(replaceRules, replaceFile)
+        Storage.saveReaderConfig(readerConfig)
     }
 
     // MARK: - 书签
@@ -219,6 +266,7 @@ final class AppModel: ObservableObject {
 
     func saveReplaceRules() {
         Storage.saveJSON(replaceRules, replaceFile)
+        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func upsertReplaceRule(_ rule: ReplaceRule) {
