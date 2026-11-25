@@ -68,7 +68,7 @@ jobs:
       - name: Install
         run: |
           xcrun simctl install "$DEVICE" build-sim/Build/Products/Debug-iphonesimulator/LegadoIOS.app
-          xcrun simctl spawn "$DEVICE" defaults write com.legado.ios.reader AppleLanguages -array zh-Hans
+          xcrun simctl spawn "$DEVICE" defaults write com.legado.ios.reader AppleLanguages -array zh-Hans || true
 
       - name: Capture screens
         run: |

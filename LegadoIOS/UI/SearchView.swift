@@ -487,9 +487,9 @@ struct SearchBookRow: View {
                 Button {
                     onAdd()
                 } label: {
-                    Image(systemName: model.isOnShelf(bookUrl: book.bookUrl) ? "checkmark" : "plus")
+                    Image(systemName: model.isOnShelf(book.bookUrl) ? "checkmark" : "plus")
                         .font(.system(size: 14, weight: .semibold))
-                        .foregroundColor(model.isOnShelf(bookUrl: book.bookUrl)
+                        .foregroundColor(model.isOnShelf(book.bookUrl)
                                          ? LegadoTheme.tertiaryText(scheme)
                                          : LegadoTheme.accent)
                         .frame(width: 34, height: 34)
@@ -498,7 +498,7 @@ struct SearchBookRow: View {
                         )
                 }
                 .buttonStyle(.plain)
-                .disabled(model.isOnShelf(bookUrl: book.bookUrl))
+                .disabled(model.isOnShelf(book.bookUrl))
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 10)
