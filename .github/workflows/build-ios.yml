@@ -38,3 +38,52 @@ jobs:
         with:
           name: LegadoIOS-ipa
           path: LegadoIOS.ipa
+
+  screenshots:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Pick a simulator
+        run: |
+          xcrun simctl list devices available | head -40
+          DEVICE=$(xcrun simctl list devices available | grep -E "iPhone" | grep -Eo "[0-9A-F]{8}-([0-9A-F]{4}-){3}[0-9A-F]{12}" | head -1)
+          echo "Using simulator $DEVICE"
+          echo "DEVICE=$DEVICE" >> "$GITHUB_ENV"
+          xcrun simctl boot "$DEVICE" || true
+          xcrun simctl bootstatus "$DEVICE" -b || true
+
+      - name: Build for simulator
+        run: |
+          xcodebuild \
+            -project LegadoIOS.xcodeproj \
+            -scheme LegadoIOS \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination "id=$DEVICE" \
+            -derivedDataPath build-sim \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Install
+        run: |
+          xcrun simctl install "$DEVICE" build-sim/Build/Products/Debug-iphonesimulator/LegadoIOS.app
+          xcrun simctl spawn "$DEVICE" defaults write com.legado.ios.reader AppleLanguages -array zh-Hans
+
+      - name: Capture screens
+        run: |
+          mkdir -p shots
+          for screen in shelf explore rss stats mine search; do
+            xcrun simctl terminate "$DEVICE" com.legado.ios.reader >/dev/null 2>&1 || true
+            SIMCTL_CHILD_LEGADO_SCREEN=$screen \
+              xcrun simctl launch "$DEVICE" com.legado.ios.reader || true
+            sleep 4
+            xcrun simctl io "$DEVICE" screenshot "shots/$screen.png" || true
+          done
+          ls -lh shots
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: LegadoIOS-screens
+          path: shots

@@ -19,6 +19,7 @@ struct ReaderView: View {
     @State private var showChrome = true
     @State private var showChapterList = false
     @State private var showStyle = false
+    @State private var showSwitchSource = false
     @State private var jumpToLastPage = false
     @State private var pageSize: CGSize = .zero
     @State private var overlayIndex: Int?
@@ -87,6 +88,13 @@ struct ReaderView: View {
                                 load(index: index)
                             },
                             onClose: { showChapterList = false })
+        }
+        .sheet(isPresented: $showSwitchSource) {
+            SwitchSourceView(book: book) { _ in
+                showSwitchSource = false
+                saveProgress()
+                dismiss()
+            }
         }
         .sheet(isPresented: $showStyle) {
             ReaderStylePanel()
@@ -251,6 +259,9 @@ struct ReaderView: View {
 
             HStack(spacing: 0) {
                 barButton("目录", "list.bullet") { showChapterList = true }
+                barButton(theme.isDark ? "日间" : "夜间",
+                          theme.isDark ? "sun.max" : "moon") { toggleNight() }
+                barButton("换源", "arrow.left.arrow.right") { showSwitchSource = true }
                 barButton("Aa", "textformat.size") { showStyle = true }
             }
         }
@@ -260,6 +271,13 @@ struct ReaderView: View {
         .padding(.bottom, 14)
         .background(Color(hex: theme.backgroundHex).opacity(0.97))
         .overlay(alignment: .top) { Divider().opacity(0.25) }
+    }
+
+    private func toggleNight() {
+        var config = model.readerConfig
+        config.theme = theme.isDark ? .system : .dark
+        model.readerConfig = config
+        model.saveReaderConfig()
     }
 
     private func barButton(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
