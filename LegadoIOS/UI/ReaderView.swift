@@ -395,6 +395,9 @@ struct ReaderView: View {
         } else {
             pageIndex = min(pageIndex, max(0, tk.pageCount - 1))
         }
+        if tk.pageCount == 0 {
+            error = "这一章没有可显示的内容"
+        }
     }
 
     private func restoredPageIndex() -> Int? {
@@ -434,7 +437,10 @@ struct ReaderView: View {
     }
 
     private func load(index: Int, lastPage: Bool = false) {
-        guard index >= 0, index < chapters.count else { return }
+        guard index >= 0, index < chapters.count else {
+            if chapters.isEmpty { error = "目录为空，请刷新目录" }
+            return
+        }
         saveProgress()
         jumpToLastPage = lastPage
         loadContent(index: index)

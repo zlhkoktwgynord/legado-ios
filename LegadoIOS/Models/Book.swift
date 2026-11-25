@@ -195,18 +195,18 @@ struct SearchBook: Codable, Identifiable, Hashable {
 // MARK: - 阅读设置
 
 struct ReaderConfig: Codable, Equatable {
-    var fontSize: Double = 22
+    var fontSize: Double = 20
     var lineSpacing: Double = 12
-    var paragraphSpacing: Double = 14
+    var paragraphSpacing: Double = 2
     var indent: Bool = true
     var fontFamily: String = ""      // 空 = 系统字体
-    var letterSpacing: Double = 0.4
+    var letterSpacing: Double = 0
     /// 0 细 1 中 2 粗
     var fontWeight: Int = 1
     /// 翻页动画：0 覆盖 1 滑动 2 无动画
     var pageAnim: Int = 0
     var theme: ReaderTheme = .system
-    var padding: Double = 22
+    var padding: Double = 16
     var showStatusBar: Bool = false
 
     static let `default` = ReaderConfig()
@@ -233,7 +233,7 @@ enum ReaderTheme: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .system: return "#FFFFFF"
         case .paper: return "#F5F1E6"
-        case .white: return "#FFFFFF"
+        case .white: return "#EEEEEE"
         case .sepia: return "#F8EFD8"
         case .green: return "#E3F0E0"
         case .dark: return "#14181C"
@@ -245,11 +245,11 @@ enum ReaderTheme: String, Codable, CaseIterable, Identifiable {
         switch self {
         case .system: return "#222222"
         case .paper: return "#2B2B2B"
-        case .white: return "#222222"
+        case .white: return "#3E3D3B"
         case .sepia: return "#4A3B22"
         case .green: return "#22331F"
         case .dark: return "#D6D6D8"
-        case .black: return "#B0B0B0"
+        case .black: return "#ADADAD"
         }
     }
 
