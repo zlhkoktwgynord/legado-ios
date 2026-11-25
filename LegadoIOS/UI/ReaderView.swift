@@ -33,7 +33,7 @@ struct ReaderView: View {
     var body: some View {
         GeometryReader { geo in
             let width = max(120, geo.size.width - CGFloat(config.padding) * 2)
-            let height = max(160, geo.size.height - 128)
+            let height = max(160, geo.size.height - 96)
 
             ZStack {
                 Color(hex: theme.backgroundHex).ignoresSafeArea()
@@ -43,6 +43,14 @@ struct ReaderView: View {
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
                     .gesture(tapGesture(width: width))
                     .simultaneousGesture(swipeGesture)
+
+                pageHeader
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .allowsHitTesting(false)
+
+                pageFooter
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottom)
+                    .allowsHitTesting(false)
 
                 if showChrome {
                     chrome
@@ -127,6 +135,44 @@ struct ReaderView: View {
         .transition(.opacity)
     }
 
+    private var pageHeader: some View {
+        HStack(spacing: 8) {
+            Text(chapterTitle)
+                .font(.system(size: 11))
+                .lineLimit(1)
+            Spacer()
+            Text(book.name)
+                .font(.system(size: 11))
+                .lineLimit(1)
+        }
+        .foregroundColor(textColor.opacity(0.45))
+        .padding(.horizontal, CGFloat(config.padding))
+        .padding(.top, 10)
+    }
+
+    private var pageFooter: some View {
+        TimelineView(.everyMinute) { context in
+            HStack(spacing: 8) {
+                Text(timeText(context.date))
+                Spacer()
+                if !pages.isEmpty {
+                    Text("\(pageIndex + 1)/\(pages.count)")
+                    Text(progressText)
+                }
+            }
+            .font(.system(size: 10))
+            .foregroundColor(textColor.opacity(0.45))
+            .padding(.horizontal, CGFloat(config.padding))
+            .padding(.bottom, 12)
+        }
+    }
+
+    private func timeText(_ date: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm"
+        return formatter.string(from: date)
+    }
+
     private var topBar: some View {
         HStack(spacing: 12) {
             Button {
@@ -136,69 +182,62 @@ struct ReaderView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 17, weight: .semibold))
             }
-            VStack(alignment: .leading, spacing: 2) {
-                Text(book.name)
-                    .font(.footnote)
-                    .lineLimit(1)
-                Text(chapterTitle)
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                    .lineLimit(1)
-            }
+            Text(chapterTitle)
+                .font(.system(size: 15))
+                .lineLimit(1)
             Spacer()
-            Button {
-                showChapterList = true
-            } label: {
-                Image(systemName: "list.bullet")
-                    .font(.system(size: 16))
-            }
+            Text(book.originName)
+                .font(.system(size: 11))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 3)
+                .background(Color.accentColor.opacity(0.15))
+                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
         }
         .foregroundColor(textColor)
         .padding(.horizontal, 16)
         .padding(.top, 8)
         .padding(.bottom, 10)
-        .background(Color(hex: theme.backgroundHex).opacity(0.96))
-        .overlay(alignment: .bottom) {
-            Divider().opacity(0.3)
-        }
+        .background(Color(hex: theme.backgroundHex).opacity(0.97))
+        .overlay(alignment: .bottom) { Divider().opacity(0.25) }
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Text("第 \(currentIndex + 1)/\(max(chapters.count, 1)) 章")
-                Spacer()
-                Text(pages.isEmpty ? "" : "第 \(pageIndex + 1)/\(pages.count) 页")
-                Spacer()
-                Text(progressText)
-            }
-            .font(.caption2)
-            .foregroundColor(textColor.opacity(0.65))
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Button {
+                    load(index: currentIndex - 1)
+                } label: {
+                    Text("上一章").font(.system(size: 12))
+                }
+                .disabled(currentIndex <= 0)
 
-            Slider(value: chapterBinding, in: 0...Double(max(chapters.count - 1, 1)), step: 1)
-                .tint(textColor.opacity(0.8))
+                Slider(value: chapterBinding, in: 0...Double(max(chapters.count - 1, 1)), step: 1)
+                    .tint(textColor.opacity(0.8))
+
+                Button {
+                    load(index: currentIndex + 1)
+                } label: {
+                    Text("下一章").font(.system(size: 12))
+                }
+                .disabled(currentIndex >= chapters.count - 1)
+            }
 
             HStack(spacing: 0) {
-                barButton("目录", "list.bullet.rectangle") { showChapterList = true }
-                barButton("上一章", "chevron.left.to.line") {
-                    load(index: currentIndex - 1)
-                }
+                barButton("目录", "list.bullet") { showChapterList = true }
+                barButton("界面", "textformat.size") { showSettings = true }
                 barButton(theme.isDark ? "日间" : "夜间",
                           theme.isDark ? "sun.max" : "moon") {
                     model.readerConfig.theme = theme.isDark ? .paper : .dark
                     model.saveReaderConfig()
                 }
-                barButton("下一章", "chevron.right.to.line") {
-                    load(index: currentIndex + 1)
-                }
-                barButton("设置", "textformat.size") { showSettings = true }
+                barButton("设置", "gearshape") { showSettings = true }
             }
         }
         .padding(.horizontal, 16)
         .padding(.top, 10)
-        .padding(.bottom, 18)
-        .background(Color(hex: theme.backgroundHex).opacity(0.96))
-        .overlay(alignment: .top) { Divider().opacity(0.3) }
+        .padding(.bottom, 16)
+        .background(Color(hex: theme.backgroundHex).opacity(0.97))
+        .overlay(alignment: .top) { Divider().opacity(0.25) }
     }
 
     private func barButton(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {

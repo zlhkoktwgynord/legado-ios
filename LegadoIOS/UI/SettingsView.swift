@@ -1,5 +1,4 @@
 import SwiftUI
-import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -7,10 +6,6 @@ struct SettingsView: View {
     @State private var cacheSize: String = "计算中…"
     @State private var showCleanAlert = false
     @State private var message: String?
-    @State private var backupURL: URL?
-    @State private var showRestorePicker = false
-    @State private var pendingRestore: URL?
-    @State private var showRestoreOptions = false
 
     var body: some View {
         NavigationStack {
@@ -52,52 +47,6 @@ struct SettingsView: View {
                     Section {
                         Text(message).font(.footnote).foregroundColor(.accentColor)
                     }
-                }
-
-                Section {
-                    Toggle("iCloud 同步", isOn: Binding(
-                        get: { model.cloudEnabled },
-                        set: { model.setCloudEnabled($0) }))
-                        .disabled(!model.cloudAvailable)
-                    if model.cloudEnabled {
-                        Button("立即同步") { model.syncNow() }
-                        if let date = model.lastSyncAt {
-                            Text("上次同步：\(date.formatted(date: .abbreviated, time: .shortened))")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        if let message = model.syncMessage {
-                            Text(message)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
-                    if !model.cloudAvailable {
-                        Text("当前环境不可用：需要付费开发者账号签名并开启 iCloud 能力（免费证书不支持）。")
-                            .font(.caption)
-                            .foregroundColor(.orange)
-                    }
-                } header: {
-                    Text("iCloud 同步")
-                } footer: {
-                    Text("同步书源、书架与阅读进度、排版和净化规则；不包含正文缓存。")
-                }
-
-                Section {
-                    if let url = backupURL {
-                        ShareLink(item: url) {
-                            Label("导出备份", systemImage: "square.and.arrow.up")
-                        }
-                    }
-                    Button {
-                        showRestorePicker = true
-                    } label: {
-                        Label("从备份恢复", systemImage: "square.and.arrow.down")
-                    }
-                } header: {
-                    Text("备份与恢复")
-                } footer: {
-                    Text("备份包含书源、书架、书签、净化规则和阅读设置，不包含书籍正文缓存。")
                 }
 
                 Section {
@@ -159,22 +108,6 @@ struct SettingsView: View {
             }
             .onAppear {
                 calcCache()
-                prepareBackup()
-            }
-            .fileImporter(isPresented: $showRestorePicker,
-                          allowedContentTypes: [.json],
-                          allowsMultipleSelection: false) { result in
-                if case .success(let urls) = result, let url = urls.first {
-                    pendingRestore = url
-                    showRestoreOptions = true
-                }
-            }
-            .confirmationDialog("恢复备份", isPresented: $showRestoreOptions) {
-                Button("合并到现有数据") { restore(replace: false) }
-                Button("覆盖现有数据", role: .destructive) { restore(replace: true) }
-                Button("取消", role: .cancel) { pendingRestore = nil }
-            } message: {
-                Text("合并会保留现有的书源和书籍；覆盖会先清空再导入。")
             }
             .alert("清除缓存？", isPresented: $showCleanAlert) {
                 Button("取消", role: .cancel) {}
@@ -194,24 +127,6 @@ struct SettingsView: View {
         let v = info?["CFBundleShortVersionString"] as? String ?? "1.0"
         let b = info?["CFBundleVersion"] as? String ?? "1"
         return "\(v) (\(b))"
-    }
-
-    private func prepareBackup() {
-        if let url = try? model.exportBackup() {
-            backupURL = url
-        }
-    }
-
-    private func restore(replace: Bool) {
-        guard let url = pendingRestore else { return }
-        do {
-            let summary = try model.restoreBackup(from: url, replace: replace)
-            message = "已恢复：\(summary)"
-            prepareBackup()
-        } catch {
-            message = "恢复失败：\(error.localizedDescription)"
-        }
-        pendingRestore = nil
     }
 
     private func calcCache() {

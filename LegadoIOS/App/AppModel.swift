@@ -10,22 +10,16 @@ final class AppModel: ObservableObject {
     @Published var readerConfig: ReaderConfig = .default
     @Published var recentKeywords: [String] = []
     @Published var replaceRules: [ReplaceRule] = []
-    @Published var bookmarks: [Bookmark] = []
     /// 0 跟随系统 1 浅色 2 深色
     @Published var appearance: Int = UserDefaults.standard.integer(forKey: "appearance")
-    @Published var cloudEnabled: Bool = UserDefaults.standard.bool(forKey: "cloudSyncEnabled")
-    @Published var lastSyncAt: Date?
-    @Published var syncMessage: String?
 
     private let sourcesFile = "sources.json"
     private let booksFile = "books.json"
     private let recentFile = "recent.json"
     private let replaceFile = "replace.json"
-    private let bookmarkFile = "bookmarks.json"
 
     init() {
         load()
-        CloudSyncService.shared.start(model: self)
     }
 
     // MARK: - 读写
@@ -35,7 +29,6 @@ final class AppModel: ObservableObject {
         books = Storage.loadJSON([Book].self, booksFile) ?? []
         recentKeywords = Storage.loadJSON([String].self, recentFile) ?? []
         readerConfig = Storage.loadReaderConfig()
-        bookmarks = Storage.loadJSON([Bookmark].self, bookmarkFile) ?? []
         if let saved = Storage.loadJSON([ReplaceRule].self, replaceFile) {
             replaceRules = saved
         } else {
@@ -46,12 +39,10 @@ final class AppModel: ObservableObject {
 
     func saveSources() {
         Storage.saveJSON(sources, sourcesFile)
-        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func saveBooks() {
         Storage.saveJSON(books, booksFile)
-        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func setAppearance(_ value: Int) {
@@ -61,7 +52,6 @@ final class AppModel: ObservableObject {
 
     func saveReaderConfig() {
         Storage.saveReaderConfig(readerConfig)
-        CloudSyncService.shared.schedulePush(model: self)
     }
 
     // MARK: - 书源
@@ -116,157 +106,10 @@ final class AppModel: ObservableObject {
         saveSources()
     }
 
-    // MARK: - 云同步
-
-    var cloudAvailable: Bool { CloudSyncService.shared.isAvailable }
-
-    func setCloudEnabled(_ enabled: Bool) {
-        cloudEnabled = enabled
-        CloudSyncService.shared.setEnabled(enabled, model: self)
-    }
-
-    func syncNow() {
-        CloudSyncService.shared.syncNow(model: self)
-    }
-
-    /// 应用云端数据（合并，不覆盖本地更新的阅读进度）
-    func applyRemote(_ payload: BackupPayload) {
-        var sourceMap = Dictionary(uniqueKeysWithValues: sources.map { ($0.bookSourceUrl, $0) })
-        for item in payload.sources { sourceMap[item.bookSourceUrl] = item }
-        sources = Array(sourceMap.values).sorted { $0.customOrder < $1.customOrder }
-
-        var bookMap = Dictionary(uniqueKeysWithValues: books.map { ($0.bookUrl, $0) })
-        for item in payload.books {
-            if let local = bookMap[item.bookUrl] {
-                if item.durChapterTime > local.durChapterTime { bookMap[item.bookUrl] = item }
-            } else {
-                bookMap[item.bookUrl] = item
-            }
-        }
-        books = Array(bookMap.values)
-
-        bookmarks = payload.bookmarks
-        replaceRules = payload.replaceRules
-        readerConfig = payload.readerConfig
-
-        Storage.saveJSON(sources, sourcesFile)
-        Storage.saveJSON(books, booksFile)
-        Storage.saveJSON(bookmarks, bookmarkFile)
-        Storage.saveJSON(replaceRules, replaceFile)
-        Storage.saveReaderConfig(readerConfig)
-    }
-
-    // MARK: - 书签
-
-    func isBookmarked(book: Book, chapter: BookChapter) -> Bool {
-        bookmarks.contains { $0.bookUrl == book.bookUrl && $0.chapterIndex == chapter.index }
-    }
-
-    func toggleBookmark(book: Book, chapter: BookChapter, content: String) {
-        if let index = bookmarks.firstIndex(where: {
-            $0.bookUrl == book.bookUrl && $0.chapterIndex == chapter.index
-        }) {
-            bookmarks.remove(at: index)
-        } else {
-            bookmarks.insert(Bookmark(book: book, chapter: chapter, content: content), at: 0)
-        }
-        Storage.saveJSON(bookmarks, bookmarkFile)
-    }
-
-    func bookmarks(for book: Book) -> [Bookmark] {
-        bookmarks.filter { $0.bookUrl == book.bookUrl }
-            .sorted { $0.chapterIndex < $1.chapterIndex }
-    }
-
-    // MARK: - 换源
-
-    /// 用另一个书源的同名书替换，保留阅读进度（按章节标题对齐）
-    func switchSource(book: Book,
-                      to searchBook: SearchBook,
-                      source: BookSource) async throws -> Book {
-        var updated = searchBook.toBook()
-        updated.durChapterIndex = book.durChapterIndex
-        updated.durChapterTitle = book.durChapterTitle
-        updated.durChapterTime = book.durChapterTime
-        updated.canUpdate = true
-        if !isOnShelf(book.bookUrl) {
-            books.insert(updated, at: 0)
-            saveBooks()
-            return updated
-        }
-        // 拉新目录，按标题对齐章节
-        let chapters = try await SourceEngine(source: source).loadToc(updated)
-        Storage.saveChapters(chapters, bookUrl: updated.bookUrl)
-        if let title = book.durChapterTitle,
-           let match = chapters.first(where: { $0.title == title }) {
-            updated.durChapterIndex = match.index
-        } else {
-            updated.durChapterIndex = min(book.durChapterIndex, max(0, chapters.count - 1))
-        }
-        updated.totalChapterNum = chapters.count
-        updated.latestChapterTitle = chapters.last?.title
-        updated.durChapterTitle = chapters.indices.contains(updated.durChapterIndex)
-            ? chapters[updated.durChapterIndex].title : updated.durChapterTitle
-
-        if let index = books.firstIndex(where: { $0.bookUrl == book.bookUrl }) {
-            books[index] = updated
-        } else {
-            books.insert(updated, at: 0)
-        }
-        saveBooks()
-        // 旧源缓存没用了，清掉
-        return updated
-    }
-
-    // MARK: - 备份 / 恢复
-
-    func exportBackup() throws -> URL {
-        let payload = BackupService.make(sources: sources,
-                                         books: books,
-                                         bookmarks: bookmarks,
-                                         replaceRules: replaceRules,
-                                         readerConfig: readerConfig)
-        return try BackupService.write(payload)
-    }
-
-    /// replace = true 时用备份整体覆盖，否则合并
-    @discardableResult
-    func restoreBackup(from url: URL, replace: Bool) throws -> String {
-        let access = url.startAccessingSecurityScopedResource()
-        defer { if access { url.stopAccessingSecurityScopedResource() } }
-        let data = try Data(contentsOf: url)
-        let payload = try BackupService.read(data)
-
-        if replace {
-            sources = payload.sources
-            books = payload.books
-            bookmarks = payload.bookmarks
-            replaceRules = payload.replaceRules
-            readerConfig = payload.readerConfig
-        } else {
-            for source in payload.sources where !sources.contains(where: { $0.bookSourceUrl == source.bookSourceUrl }) {
-                sources.append(source)
-            }
-            for book in payload.books where !books.contains(where: { $0.bookUrl == book.bookUrl }) {
-                books.append(book)
-            }
-            for mark in payload.bookmarks where !bookmarks.contains(where: { $0.id == mark.id }) {
-                bookmarks.append(mark)
-            }
-        }
-        saveSources()
-        saveBooks()
-        saveReaderConfig()
-        Storage.saveJSON(bookmarks, bookmarkFile)
-        Storage.saveJSON(replaceRules, replaceFile)
-        return "书源 \(payload.sources.count) 个、书籍 \(payload.books.count) 本、书签 \(payload.bookmarks.count) 条"
-    }
-
     // MARK: - 替换净化
 
     func saveReplaceRules() {
         Storage.saveJSON(replaceRules, replaceFile)
-        CloudSyncService.shared.schedulePush(model: self)
     }
 
     func upsertReplaceRule(_ rule: ReplaceRule) {

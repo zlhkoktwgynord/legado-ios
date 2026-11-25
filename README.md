@@ -15,9 +15,9 @@
 | 详情 | 书名/作者/分类/字数/封面/简介/最新章节，目录地址解析 |
 | 目录 | 分页目录（nextTocUrl）、正序倒序、去重、本地缓存 |
 | 正文 | 正文规则、下一页拼接（nextContentUrl）、标题规则、全文替换规则、本地缓存 |
-| 书架 | 封面网格、最近阅读排序、未读章节数、刷新目录、移出书架 |
-| 阅读器 | 字号/行距/段间距/页边距/缩进、6 种主题、目录跳转、上一章/下一章、系统 TTS 朗读、进度保存 |
-| 设置 | 默认排版、缓存清理、数据统计 |
+| 书架 | 封面网格、搜索、排序、未读章节数、刷新目录、整本缓存、移出书架 |
+| 阅读器 | 仿原版翻页排版（CoreText 分页）、字号/字体/字间距/行距/段距/页边距/缩进、6 种主题、目录、上一章/下一章、进度保存 |
+| 设置 | 外观（跟随系统/浅色/深色）、阅读排版、替换净化、缓存清理 |
 
 ## 规则引擎覆盖范围
 
@@ -62,24 +62,6 @@ open LegadoIOS.xcodeproj
 
 工程里没有任何第三方二进制依赖：HTML 解析用的是随仓库附带的
 [SwiftSoup](https://github.com/scinfu/SwiftSoup) 源码（MIT），JS 用系统的 JavaScriptCore。
-
-## iCloud 同步（需要付费开发者账号）
-
-设置 →「iCloud 同步」会把**书源、书架与阅读进度、排版和净化规则**写进
-`NSUbiquitousKeyValueStore`，同一 Apple ID 的设备之间自动同步（启动拉取、退到后台推送）。
-
-限制与前提：
-
-- 需要 App 带 `com.apple.developer.ubiquity-kvstore-identifier` entitlement，
-  而 iCloud 能力**只对付费 Apple Developer Program 账号开放**；
-- 免费证书自签的包没有这个能力，开关会置灰（`ubiquityIdentityToken` 为 nil），
-  不影响其他功能；
-- 用 Xcode 打开工程 → Signing & Capabilities → 添加 iCloud → 勾选 Key-value storage，
-  选自己的 Team 编译即可；
-- 数据上限 1MB，书源很多时会超，超了会提示改用备份文件。
-
-`LegadoIOS/Resources/LegadoIOS.entitlements` 是给签名工具用的模板，
-自签工具如果支持「注入 entitlements」可以填这个文件，但仍要求证书本身带 iCloud 能力。
 
 ## 首次使用
 
