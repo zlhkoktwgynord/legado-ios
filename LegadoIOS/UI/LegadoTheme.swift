@@ -9,7 +9,7 @@ import UIKit
 enum LegadoTheme {
 
     /// 安卓版默认强调色（md_red_600）
-    static let accent = Color(hex: "#0A84FF")
+    static let accent = Color(hex: "#E53935")
 
     static func isDark(_ scheme: ColorScheme) -> Bool { scheme == .dark }
 
