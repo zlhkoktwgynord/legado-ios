@@ -195,9 +195,9 @@ struct SearchBook: Codable, Identifiable, Hashable {
 // MARK: - 阅读设置
 
 struct ReaderConfig: Codable, Equatable {
-    var fontSize: Double = 19
-    var lineSpacing: Double = 8
-    var paragraphSpacing: Double = 10
+    var fontSize: Double = 22
+    var lineSpacing: Double = 12
+    var paragraphSpacing: Double = 14
     var indent: Bool = true
     var fontFamily: String = ""      // 空 = 系统字体
     var letterSpacing: Double = 0.4
@@ -206,7 +206,7 @@ struct ReaderConfig: Codable, Equatable {
     /// 翻页动画：0 覆盖 1 滑动 2 无动画
     var pageAnim: Int = 0
     var theme: ReaderTheme = .system
-    var padding: Double = 20
+    var padding: Double = 22
     var showStatusBar: Bool = false
 
     static let `default` = ReaderConfig()

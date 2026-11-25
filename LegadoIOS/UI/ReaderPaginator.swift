@@ -111,3 +111,37 @@ final class PageDrawView: UIView {
         CTFrameDraw(frame, context)
     }
 }
+
+
+/// TextKit 单页绘制视图
+struct TextKitPageView: UIViewRepresentable {
+    let paginator: TextKitPaginator
+    let index: Int
+
+    func makeUIView(context: Context) -> TextKitDrawView {
+        let view = TextKitDrawView()
+        view.backgroundColor = .clear
+        view.isOpaque = false
+        return view
+    }
+
+    func updateUIView(_ view: TextKitDrawView, context: Context) {
+        view.paginator = paginator
+        view.index = index
+        view.setNeedsDisplay()
+    }
+}
+
+final class TextKitDrawView: UIView {
+    var paginator: TextKitPaginator?
+    var index: Int = 0
+
+    override func draw(_ rect: CGRect) {
+        guard let paginator = paginator,
+              let container = paginator.container(at: index) else { return }
+        let layout = paginator.layout
+        let glyphRange = layout.glyphRange(for: container)
+        guard glyphRange.length > 0 else { return }
+        layout.drawGlyphs(forGlyphRange: glyphRange, at: .zero)
+    }
+}

@@ -12,8 +12,7 @@ struct ReaderView: View {
     @State private var currentIndex: Int
     @State private var chapters: [BookChapter] = []
     @State private var content: String = ""
-    @State private var attributed: NSAttributedString?
-    @State private var pages: [NSRange] = []
+    @State private var paginator: TextKitPaginator?
     @State private var pageIndex: Int = 0
     @State private var loading = false
     @State private var error: String?
@@ -22,7 +21,7 @@ struct ReaderView: View {
     @State private var showStyle = false
     @State private var jumpToLastPage = false
     @State private var pageSize: CGSize = .zero
-    @State private var overlayRange: NSRange?
+    @State private var overlayIndex: Int?
     @State private var overlayX: CGFloat = 0
     @State private var batteryLevel: Float = -1
     @State private var baseX: CGFloat = 0
@@ -108,11 +107,11 @@ struct ReaderView: View {
                     Button("重试") { loadContent(index: currentIndex) }
                 }
                 .padding()
-            } else if let attributed = attributed, pages.indices.contains(pageIndex) {
-                PageTextView(attributed: attributed, range: pages[pageIndex])
+            } else if let paginator = paginator, pageCount > 0 {
+                TextKitPageView(paginator: paginator, index: pageIndex)
                     .offset(x: baseX)
-                if let overlay = overlayRange {
-                    PageTextView(attributed: attributed, range: overlay)
+                if let overlay = overlayIndex {
+                    TextKitPageView(paginator: paginator, index: overlay)
                         .offset(x: overlayX)
                 }
             }
@@ -150,8 +149,8 @@ struct ReaderView: View {
             HStack(spacing: 6) {
                 Text(batteryText)
                 Spacer()
-                if !pages.isEmpty {
-                    Text("\(pageIndex + 1)/\(pages.count)")
+                if pageCount > 0 {
+                    Text("\(pageIndex + 1)/\(pageCount)")
                     Text(progressText)
                 }
             }
@@ -237,10 +236,10 @@ struct ReaderView: View {
                 .disabled(currentIndex <= 0)
 
                 Slider(value: pageBinding,
-                       in: 0...Double(max(pages.count - 1, 1)),
+                       in: 0...Double(max(pageCount - 1, 1)),
                        step: 1)
                     .tint(textColor.opacity(0.8))
-                    .disabled(pages.isEmpty)
+                    .disabled(pageCount == 0)
 
                 Button {
                     load(index: currentIndex + 1)
@@ -278,8 +277,8 @@ struct ReaderView: View {
         Binding(
             get: { Double(pageIndex) },
             set: { value in
-                guard !pages.isEmpty else { return }
-                pageIndex = min(max(0, Int(value.rounded())), pages.count - 1)
+                guard pageCount > 0 else { return }
+                pageIndex = min(max(0, Int(value.rounded())), pageCount - 1)
                 saveProgress()
             })
     }
@@ -290,8 +289,8 @@ struct ReaderView: View {
     }
 
     private var progressText: String {
-        guard !pages.isEmpty else { return "" }
-        let chapterProgress = Double(pageIndex + 1) / Double(pages.count)
+        guard pageCount > 0 else { return "" }
+        let chapterProgress = Double(pageIndex + 1) / Double(pageCount)
         let total = max(chapters.count, 1)
         let overall = (Double(currentIndex) + chapterProgress) / Double(total)
         return String(format: "%.2f%%", overall * 100)
@@ -300,8 +299,8 @@ struct ReaderView: View {
     // MARK: - 覆盖翻页
 
     private func nextPage() {
-        guard !pages.isEmpty, overlayRange == nil else { return }
-        guard pageIndex + 1 < pages.count else {
+        guard pageCount > 0, overlayIndex == nil else { return }
+        guard pageIndex + 1 < pageCount else {
             if currentIndex + 1 < chapters.count { load(index: currentIndex + 1) }
             return
         }
@@ -311,7 +310,7 @@ struct ReaderView: View {
             pageIndex = target
             saveProgress()
         case 1:
-            overlayRange = pages[target]
+            overlayIndex = target
             overlayX = pageSize.width
             withAnimation(.easeOut(duration: 0.25)) {
                 overlayX = 0
@@ -319,24 +318,24 @@ struct ReaderView: View {
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
                 pageIndex = target
-                overlayRange = nil
+                overlayIndex = nil
                 baseX = 0
                 saveProgress()
             }
         default:
-            overlayRange = pages[target]
+            overlayIndex = target
             overlayX = pageSize.width
             withAnimation(.easeOut(duration: 0.22)) { overlayX = 0 }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.23) {
                 pageIndex = target
-                overlayRange = nil
+                overlayIndex = nil
                 saveProgress()
             }
         }
     }
 
     private func previousPage() {
-        guard !pages.isEmpty, overlayRange == nil else { return }
+        guard pageCount > 0, overlayIndex == nil else { return }
         guard pageIndex > 0 else {
             if currentIndex > 0 { load(index: currentIndex - 1, lastPage: true) }
             return
@@ -347,27 +346,27 @@ struct ReaderView: View {
             pageIndex = target
             saveProgress()
         case 1:
-            let current = pages[pageIndex]
+            let current = pageIndex
             baseX = -pageSize.width
             pageIndex = target
-            overlayRange = current
+            overlayIndex = current
             overlayX = 0
             withAnimation(.easeOut(duration: 0.25)) {
                 overlayX = pageSize.width
                 baseX = 0
             }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.26) {
-                overlayRange = nil
+                overlayIndex = nil
                 saveProgress()
             }
         default:
-            let current = pages[pageIndex]
+            let current = pageIndex
             pageIndex = target
-            overlayRange = current
+            overlayIndex = current
             overlayX = 0
             withAnimation(.easeOut(duration: 0.22)) { overlayX = pageSize.width }
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.23) {
-                overlayRange = nil
+                overlayIndex = nil
                 saveProgress()
             }
         }
@@ -381,26 +380,28 @@ struct ReaderView: View {
         return TextCleaner.applyReplaceRules(content, rules: rules)
     }
 
+    private var pageCount: Int { paginator?.pageCount ?? 0 }
+
     private func rebuild() {
         guard !content.isEmpty, pageSize.width > 0 else { return }
-        let text = processedContent
-        attributed = ReaderPaginator.attributedString(text, config: config)
-        pages = ReaderPaginator.pages(text, config: config, size: pageSize)
+        let tk = TextKitPaginator(text: processedContent, config: config,
+                                  size: pageSize, theme: theme)
+        paginator = tk
         if jumpToLastPage {
             jumpToLastPage = false
-            pageIndex = max(0, pages.count - 1)
+            pageIndex = max(0, tk.pageCount - 1)
         } else if let restored = restoredPageIndex() {
-            pageIndex = min(restored, max(0, pages.count - 1))
+            pageIndex = min(restored, max(0, tk.pageCount - 1))
         } else {
-            pageIndex = min(pageIndex, max(0, pages.count - 1))
+            pageIndex = min(pageIndex, max(0, tk.pageCount - 1))
         }
     }
 
     private func restoredPageIndex() -> Int? {
         guard currentIndex == book.durChapterIndex, book.durChapterPos > 0,
-              pages.count > 1 else { return nil }
+              pageCount > 1 else { return nil }
         let ratio = Double(book.durChapterPos) / 1000.0
-        return Int(ratio * Double(pages.count))
+        return Int(ratio * Double(pageCount))
     }
 
     private func prepare() {
@@ -442,7 +443,7 @@ struct ReaderView: View {
     private func loadContent(index: Int) {
         currentIndex = index
         pageIndex = 0
-        overlayRange = nil
+        overlayIndex = nil
         guard chapters.indices.contains(index) else { return }
         let chapter = chapters[index]
 
@@ -490,8 +491,8 @@ struct ReaderView: View {
         updated.durChapterIndex = currentIndex
         updated.durChapterTitle = chapters.indices.contains(currentIndex) ? chapters[currentIndex].title : nil
         updated.durChapterTime = Int64(Date().timeIntervalSince1970 * 1000)
-        if !pages.isEmpty {
-            updated.durChapterPos = Int(Double(pageIndex) / Double(pages.count) * 1000)
+        if pageCount > 0 {
+            updated.durChapterPos = Int(Double(pageIndex) / Double(pageCount) * 1000)
         }
         if model.isOnShelf(book.bookUrl) {
             model.updateBook(updated)
