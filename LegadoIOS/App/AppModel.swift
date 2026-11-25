@@ -20,6 +20,9 @@ final class AppModel: ObservableObject {
 
     init() {
         load()
+        #if DEBUG
+        seedDemoIfNeeded()
+        #endif
     }
 
     // MARK: - 读写
@@ -36,6 +39,51 @@ final class AppModel: ObservableObject {
             Storage.saveJSON(replaceRules, replaceFile)
         }
     }
+
+    #if DEBUG
+    /// 截图流水线用：没有书架数据时写入几本示例书
+    func seedDemoIfNeeded() {
+        guard ProcessInfo.processInfo.environment["LEGADO_DEMO"] == "1" else { return }
+        guard books.isEmpty else { return }
+
+        let samples: [(title: String, author: String, readIndex: Int, paragraphs: Int)] = [
+            ("长夜将明", "示例作者", 2, 60),
+            ("山海旧事", "示例作者", 1, 30),
+            ("短篇集", "佚名", 0, 12)
+        ]
+
+        for sample in samples {
+            let text = demoText(title: sample.title, paragraphs: sample.paragraphs)
+            guard let data = text.data(using: .utf8),
+                  let imported = try? LocalBookImporter.load(data: data, fileName: "\(sample.title).txt") else { continue }
+            var book = imported.book
+            book.author = sample.author
+            let chapters = imported.chapters
+            Storage.saveChapters(chapters, bookUrl: book.bookUrl)
+            book.totalChapterNum = chapters.count
+            book.latestChapterTitle = chapters.last?.title
+            book.durChapterIndex = min(sample.readIndex, max(0, chapters.count - 1))
+            if chapters.indices.contains(book.durChapterIndex) {
+                book.durChapterTitle = chapters[book.durChapterIndex].title
+            }
+            book.lastCheckTime = Int64(Date().timeIntervalSince1970 * 1000)
+            book.durChapterTime = Int64(Date().timeIntervalSince1970 * 1000) - Int64(books.count) * 3_600_000
+            books.append(book)
+        }
+        saveBooks()
+    }
+
+    private func demoText(title: String, paragraphs: Int) -> String {
+        var lines: [String] = []
+        for chapter in 1...3 {
+            lines.append("第\(chapter)章 第\(chapter)节")
+            for index in 0..<paragraphs {
+                lines.append("　　这是《\(title)》第 \(chapter) 章的第 \(index + 1) 段示例正文，用来检查字号、行距、段距和分页是否正确。夜色沉下来的时候，城市的声音也跟着退远了。")
+            }
+        }
+        return lines.joined(separator: "\n")
+    }
+    #endif
 
     func saveSources() {
         Storage.saveJSON(sources, sourcesFile)

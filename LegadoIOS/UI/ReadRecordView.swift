@@ -9,7 +9,7 @@ struct ReadRecordView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    Text("阅读统计")
+                    Text("阅读记录")
                         .font(.system(size: 24, weight: .semibold))
                         .foregroundColor(LegadoTheme.primaryText(scheme))
                         .frame(maxWidth: .infinity, alignment: .leading)

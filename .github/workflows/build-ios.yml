@@ -73,13 +73,23 @@ jobs:
       - name: Capture screens
         run: |
           mkdir -p shots
-          for screen in shelf explore rss stats mine search; do
+          capture() {
+            screen="$1"
+            out="$2"
             xcrun simctl terminate "$DEVICE" com.legado.ios.reader >/dev/null 2>&1 || true
-            SIMCTL_CHILD_LEGADO_SCREEN=$screen \
+            SIMCTL_CHILD_LEGADO_DEMO=1 SIMCTL_CHILD_LEGADO_SCREEN="$screen" \
               xcrun simctl launch "$DEVICE" com.legado.ios.reader || true
-            sleep 4
-            xcrun simctl io "$DEVICE" screenshot "shots/$screen.png" || true
+            sleep 5
+            xcrun simctl io "$DEVICE" screenshot "shots/$out.png" || true
+          }
+          for screen in shelf explore rss stats mine search reader; do
+            capture "$screen" "$screen"
           done
+          xcrun simctl ui "$DEVICE" appearance dark || true
+          sleep 2
+          capture shelf shelf_dark
+          capture mine mine_dark
+          capture reader reader_dark
           ls -lh shots
 
       - uses: actions/upload-artifact@v4

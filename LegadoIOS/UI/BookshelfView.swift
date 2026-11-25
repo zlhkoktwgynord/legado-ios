@@ -32,6 +32,7 @@ struct BookshelfView: View {
             .navigationDestination(for: Route.self) { route in
                 RouteView(route: route)
             }
+            .onAppear { debugOpenReader() }
             .overlay(alignment: .bottom) {
                 if let toast = toast {
                     Text(toast)
@@ -421,6 +422,15 @@ struct BookshelfView: View {
     }
 
     // MARK: - 动作
+
+    private func debugOpenReader() {
+        #if DEBUG
+        guard ProcessInfo.processInfo.environment["LEGADO_SCREEN"] == "reader",
+              path.isEmpty,
+              let book = model.sortedBooks.first else { return }
+        path.append(Route.reader(book, book.durChapterIndex))
+        #endif
+    }
 
     private func setColumns(_ value: Int) {
         columns = value
