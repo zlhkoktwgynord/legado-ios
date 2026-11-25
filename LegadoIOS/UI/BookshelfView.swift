@@ -1,6 +1,13 @@
 import SwiftUI
 import UniformTypeIdentifiers
 
+enum ActiveSheet: String, Identifiable {
+    case settings
+    case importer
+
+    var id: String { rawValue }
+}
+
 struct BookshelfView: View {
     @EnvironmentObject private var model: AppModel
     @Binding var selectedTab: Int
@@ -8,11 +15,30 @@ struct BookshelfView: View {
     @State private var refreshing: Set<String> = []
     @State private var toast: String?
     @State private var errorMessage: String?
-    @State private var showSettings = false
-    @State private var showImporter = false
+    @State private var activeSheet: ActiveSheet?
+    @State private var searchText = ""
+    @State private var sortMode = 0
     @State private var path = NavigationPath()
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 130), spacing: 16)]
+
+    private var displayBooks: [Book] {
+        var list: [Book]
+        switch sortMode {
+        case 1:
+            list = model.books.sorted { $0.name < $1.name }
+        case 2:
+            list = model.books
+        default:
+            list = model.sortedBooks
+        }
+        let query = searchText.trimmingCharacters(in: .whitespaces)
+        guard !query.isEmpty else { return list }
+        return list.filter {
+            $0.name.localizedCaseInsensitiveContains(query)
+                || $0.author.localizedCaseInsensitiveContains(query)
+        }
+    }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -24,16 +50,24 @@ struct BookshelfView: View {
                 }
             }
             .navigationTitle("书架")
+            .searchable(text: $searchText, prompt: "搜索书名或作者")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Menu {
                         Button {
-                            showImporter = true
+                            activeSheet = .importer
                         } label: {
                             Label("导入本地 TXT", systemImage: "doc.badge.plus")
                         }
+                        Menu {
+                            Button("最近阅读") { sortMode = 0 }
+                            Button("书名") { sortMode = 1 }
+                            Button("加入顺序") { sortMode = 2 }
+                        } label: {
+                            Label("排序", systemImage: "arrow.up.arrow.down")
+                        }
                         Button {
-                            showSettings = true
+                            activeSheet = .settings
                         } label: {
                             Label("设置", systemImage: "gearshape")
                         }
@@ -44,12 +78,6 @@ struct BookshelfView: View {
             }
             .navigationDestination(for: Route.self) { route in
                 RouteView(route: route)
-            }
-            .sheet(isPresented: $showSettings) { SettingsView() }
-            .fileImporter(isPresented: $showImporter,
-                          allowedContentTypes: [.plainText, .text],
-                          allowsMultipleSelection: false) { result in
-                handleImport(result)
             }
             .overlay(alignment: .bottom) {
                 if let toast = toast {
@@ -72,6 +100,18 @@ struct BookshelfView: View {
                 Text(errorMessage ?? "")
             }
         }
+        .sheet(item: $activeSheet) { sheet in
+            switch sheet {
+            case .settings:
+                SettingsView()
+            case .importer:
+                DocumentPicker { url in
+                    activeSheet = nil
+                    handlePicked(url)
+                }
+                .ignoresSafeArea()
+            }
+        }
     }
 
     private var emptyView: some View {
@@ -91,7 +131,7 @@ struct BookshelfView: View {
                 .buttonStyle(.borderedProminent)
 
                 Button {
-                    showImporter = true
+                    activeSheet = .importer
                 } label: {
                     Text("导入本地 TXT")
                         .frame(maxWidth: 220)
@@ -105,7 +145,7 @@ struct BookshelfView: View {
     private var shelf: some View {
         ScrollView {
             LazyVGrid(columns: columns, spacing: 20) {
-                ForEach(model.sortedBooks) { book in
+                ForEach(displayBooks) { book in
                     NavigationLink(value: Route.reader(book, book.durChapterIndex)) {
                         cell(book)
                     }
@@ -176,22 +216,29 @@ struct BookshelfView: View {
         return count > 0 ? count : nil
     }
 
-    private func handleImport(_ result: Result<[URL], Error>) {
-        switch result {
-        case .success(let urls):
-            guard let url = urls.first else { return }
-            let access = url.startAccessingSecurityScopedResource()
-            defer { if access { url.stopAccessingSecurityScopedResource() } }
+    private func handlePicked(_ url: URL) {
+        let name = url.lastPathComponent
+        let ext = url.pathExtension.lowercased()
+        guard ["txt", "text", "md", "log", ""].contains(ext) else {
+            errorMessage = "目前只支持 TXT 文件（选中的是 .\(ext)）"
+            return
+        }
+        Task { @MainActor in
             do {
                 let data = try Data(contentsOf: url)
-                let imported = try LocalBookImporter.load(data: data, fileName: url.lastPathComponent)
+                guard !data.isEmpty else {
+                    errorMessage = "文件是空的，或者系统没有复制成功"
+                    return
+                }
+                let imported = try await Task.detached(priority: .userInitiated) {
+                    try LocalBookImporter.load(data: data, fileName: name)
+                }.value
                 let book = model.addLocalBook(imported)
+                try? await Task.sleep(nanoseconds: 350_000_000)
                 path.append(Route.reader(book, 0))
             } catch {
-                errorMessage = error.localizedDescription
+                errorMessage = "导入失败：\(error.localizedDescription)"
             }
-        case .failure(let error):
-            errorMessage = error.localizedDescription
         }
     }
 

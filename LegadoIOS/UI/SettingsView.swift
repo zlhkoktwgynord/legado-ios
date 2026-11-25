@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct SettingsView: View {
     @EnvironmentObject private var model: AppModel
@@ -6,6 +7,10 @@ struct SettingsView: View {
     @State private var cacheSize: String = "计算中…"
     @State private var showCleanAlert = false
     @State private var message: String?
+    @State private var backupURL: URL?
+    @State private var showRestorePicker = false
+    @State private var pendingRestore: URL?
+    @State private var showRestoreOptions = false
 
     var body: some View {
         NavigationStack {
@@ -34,6 +39,23 @@ struct SettingsView: View {
                     Section {
                         Text(message).font(.footnote).foregroundColor(.accentColor)
                     }
+                }
+
+                Section {
+                    if let url = backupURL {
+                        ShareLink(item: url) {
+                            Label("导出备份", systemImage: "square.and.arrow.up")
+                        }
+                    }
+                    Button {
+                        showRestorePicker = true
+                    } label: {
+                        Label("从备份恢复", systemImage: "square.and.arrow.down")
+                    }
+                } header: {
+                    Text("备份与恢复")
+                } footer: {
+                    Text("备份包含书源、书架、书签、净化规则和阅读设置，不包含书籍正文缓存。")
                 }
 
                 Section {
@@ -93,7 +115,25 @@ struct SettingsView: View {
                     Button("完成") { dismiss() }
                 }
             }
-            .onAppear { calcCache() }
+            .onAppear {
+                calcCache()
+                prepareBackup()
+            }
+            .fileImporter(isPresented: $showRestorePicker,
+                          allowedContentTypes: [.json],
+                          allowsMultipleSelection: false) { result in
+                if case .success(let urls) = result, let url = urls.first {
+                    pendingRestore = url
+                    showRestoreOptions = true
+                }
+            }
+            .confirmationDialog("恢复备份", isPresented: $showRestoreOptions) {
+                Button("合并到现有数据") { restore(replace: false) }
+                Button("覆盖现有数据", role: .destructive) { restore(replace: true) }
+                Button("取消", role: .cancel) { pendingRestore = nil }
+            } message: {
+                Text("合并会保留现有的书源和书籍；覆盖会先清空再导入。")
+            }
             .alert("清除缓存？", isPresented: $showCleanAlert) {
                 Button("取消", role: .cancel) {}
                 Button("清除", role: .destructive) {
@@ -112,6 +152,24 @@ struct SettingsView: View {
         let v = info?["CFBundleShortVersionString"] as? String ?? "1.0"
         let b = info?["CFBundleVersion"] as? String ?? "1"
         return "\(v) (\(b))"
+    }
+
+    private func prepareBackup() {
+        if let url = try? model.exportBackup() {
+            backupURL = url
+        }
+    }
+
+    private func restore(replace: Bool) {
+        guard let url = pendingRestore else { return }
+        do {
+            let summary = try model.restoreBackup(from: url, replace: replace)
+            message = "已恢复：\(summary)"
+            prepareBackup()
+        } catch {
+            message = "恢复失败：\(error.localizedDescription)"
+        }
+        pendingRestore = nil
     }
 
     private func calcCache() {

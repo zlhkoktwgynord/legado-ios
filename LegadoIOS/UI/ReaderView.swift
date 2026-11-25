@@ -13,6 +13,7 @@ struct ReaderView: View {
     @State private var showToolbar = true
     @State private var showChapterList = false
     @State private var showSettings = false
+    @State private var showBookmarks = false
     @State private var speaking = false
 
     init(book: Book, startIndex: Int) {
@@ -84,6 +85,12 @@ struct ReaderView: View {
         }
         .sheet(isPresented: $showSettings) {
             ReaderSettingsView()
+        }
+        .sheet(isPresented: $showBookmarks) {
+            BookmarksView(book: book) { index in
+                showBookmarks = false
+                load(index: index)
+            }
         }
     }
 
@@ -243,6 +250,10 @@ struct ReaderView: View {
                 barButton(icon: speaking ? "speaker.wave.2.fill" : "speaker.wave.2", title: "朗读") {
                     toggleSpeech()
                 }
+                barButton(icon: isCurrentBookmarked ? "bookmark.fill" : "bookmark",
+                          title: "书签") {
+                    toggleBookmark()
+                }
                 barButton(icon: "textformat.size", title: "排版") {
                     showSettings = true
                 }
@@ -262,6 +273,20 @@ struct ReaderView: View {
             .frame(maxWidth: .infinity)
             .foregroundColor(.primary)
         }
+    }
+
+    private var currentChapter: BookChapter? {
+        chapters.indices.contains(currentIndex) ? chapters[currentIndex] : nil
+    }
+
+    private var isCurrentBookmarked: Bool {
+        guard let chapter = currentChapter else { return false }
+        return model.isBookmarked(book: book, chapter: chapter)
+    }
+
+    private func toggleBookmark() {
+        guard let chapter = currentChapter else { return }
+        model.toggleBookmark(book: book, chapter: chapter, content: content)
     }
 
     private func toggleSpeech() {

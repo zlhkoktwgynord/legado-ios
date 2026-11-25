@@ -10,11 +10,13 @@ final class AppModel: ObservableObject {
     @Published var readerConfig: ReaderConfig = .default
     @Published var recentKeywords: [String] = []
     @Published var replaceRules: [ReplaceRule] = []
+    @Published var bookmarks: [Bookmark] = []
 
     private let sourcesFile = "sources.json"
     private let booksFile = "books.json"
     private let recentFile = "recent.json"
     private let replaceFile = "replace.json"
+    private let bookmarkFile = "bookmarks.json"
 
     init() {
         load()
@@ -27,6 +29,7 @@ final class AppModel: ObservableObject {
         books = Storage.loadJSON([Book].self, booksFile) ?? []
         recentKeywords = Storage.loadJSON([String].self, recentFile) ?? []
         readerConfig = Storage.loadReaderConfig()
+        bookmarks = Storage.loadJSON([Bookmark].self, bookmarkFile) ?? []
         if let saved = Storage.loadJSON([ReplaceRule].self, replaceFile) {
             replaceRules = saved
         } else {
@@ -97,6 +100,72 @@ final class AppModel: ObservableObject {
         let targets = offsets.map { list[$0].bookSourceUrl }
         sources.removeAll { targets.contains($0.bookSourceUrl) }
         saveSources()
+    }
+
+    // MARK: - 书签
+
+    func isBookmarked(book: Book, chapter: BookChapter) -> Bool {
+        bookmarks.contains { $0.bookUrl == book.bookUrl && $0.chapterIndex == chapter.index }
+    }
+
+    func toggleBookmark(book: Book, chapter: BookChapter, content: String) {
+        if let index = bookmarks.firstIndex(where: {
+            $0.bookUrl == book.bookUrl && $0.chapterIndex == chapter.index
+        }) {
+            bookmarks.remove(at: index)
+        } else {
+            bookmarks.insert(Bookmark(book: book, chapter: chapter, content: content), at: 0)
+        }
+        Storage.saveJSON(bookmarks, bookmarkFile)
+    }
+
+    func bookmarks(for book: Book) -> [Bookmark] {
+        bookmarks.filter { $0.bookUrl == book.bookUrl }
+            .sorted { $0.chapterIndex < $1.chapterIndex }
+    }
+
+    // MARK: - 备份 / 恢复
+
+    func exportBackup() throws -> URL {
+        let payload = BackupService.make(sources: sources,
+                                         books: books,
+                                         bookmarks: bookmarks,
+                                         replaceRules: replaceRules,
+                                         readerConfig: readerConfig)
+        return try BackupService.write(payload)
+    }
+
+    /// replace = true 时用备份整体覆盖，否则合并
+    @discardableResult
+    func restoreBackup(from url: URL, replace: Bool) throws -> String {
+        let access = url.startAccessingSecurityScopedResource()
+        defer { if access { url.stopAccessingSecurityScopedResource() } }
+        let data = try Data(contentsOf: url)
+        let payload = try BackupService.read(data)
+
+        if replace {
+            sources = payload.sources
+            books = payload.books
+            bookmarks = payload.bookmarks
+            replaceRules = payload.replaceRules
+            readerConfig = payload.readerConfig
+        } else {
+            for source in payload.sources where !sources.contains(where: { $0.bookSourceUrl == source.bookSourceUrl }) {
+                sources.append(source)
+            }
+            for book in payload.books where !books.contains(where: { $0.bookUrl == book.bookUrl }) {
+                books.append(book)
+            }
+            for mark in payload.bookmarks where !bookmarks.contains(where: { $0.id == mark.id }) {
+                bookmarks.append(mark)
+            }
+        }
+        saveSources()
+        saveBooks()
+        saveReaderConfig()
+        Storage.saveJSON(bookmarks, bookmarkFile)
+        Storage.saveJSON(replaceRules, replaceFile)
+        return "书源 \(payload.sources.count) 个、书籍 \(payload.books.count) 本、书签 \(payload.bookmarks.count) 条"
     }
 
     // MARK: - 替换净化
