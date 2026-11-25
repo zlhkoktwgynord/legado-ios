@@ -72,6 +72,14 @@ struct Book: Codable, Identifiable, Hashable {
         variable = c.value(.variable, nil)
     }
 
+    /// 本地书籍用 local://<id> 作为 bookUrl
+    var isLocal: Bool { bookUrl.hasPrefix("local://") }
+
+    static func localUrl(id: String) -> String { "local://\(id)" }
+    static func localId(from bookUrl: String) -> String {
+        bookUrl.replacingOccurrences(of: "local://", with: "")
+    }
+
     var displayName: String { name }
     var displayAuthor: String { author.isEmpty ? "佚名" : author }
 
@@ -92,6 +100,9 @@ struct BookChapter: Codable, Identifiable, Hashable {
     var tag: String?
     var wordCount: String?
     var variable: String?
+    /// 本地 TXT 章节在文件中的 UTF-16 偏移
+    var start: Int64?
+    var end: Int64?
 
     var id: String { "\(bookUrl)#\(index)#\(url)" }
 
@@ -110,6 +121,8 @@ struct BookChapter: Codable, Identifiable, Hashable {
         tag = c.value(.tag, nil)
         wordCount = c.value(.wordCount, nil)
         variable = c.value(.variable, nil)
+        start = c.value(.start, nil)
+        end = c.value(.end, nil)
     }
 
     func hash(into hasher: inout Hasher) {
@@ -187,6 +200,7 @@ struct ReaderConfig: Codable, Equatable {
     var paragraphSpacing: Double = 10
     var indent: Bool = true
     var fontFamily: String = ""      // 空 = 系统字体
+    var letterSpacing: Double = 0.4
     var theme: ReaderTheme = .paper
     var padding: Double = 20
     var showStatusBar: Bool = false

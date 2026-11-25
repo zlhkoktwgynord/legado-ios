@@ -98,6 +98,24 @@ final class RuleTests: XCTestCase {
         XCTAssertTrue(text.contains("第二段"))
     }
 
+    func testLocalTXTImport() throws {
+        let text = "简介内容\n\n第一章 开始\n第一段正文。\n\n第二章 继续\n第二段正文。\n"
+        let imported = try LocalBookImporter.load(data: Data(text.utf8), fileName: "测试书.txt")
+        XCTAssertEqual(imported.book.name, "测试书")
+        XCTAssertTrue(imported.book.isLocal)
+        XCTAssertEqual(imported.chapters.count, 2)
+        XCTAssertEqual(imported.chapters[0].title, "第一章 开始")
+        let body = try LocalBookImporter.content(book: imported.book, chapter: imported.chapters[0])
+        XCTAssertTrue(body.contains("第一段正文"))
+        XCTAssertFalse(body.contains("第二章"))
+    }
+
+    func testReplaceRules() {
+        let rules = [ReplaceRule(name: "去广告", pattern: "本章未完.*", replacement: "", isRegex: true)]
+        let cleaned = TextCleaner.applyReplaceRules("正文内容\n本章未完，请投推荐票", rules: rules)
+        XCTAssertEqual(cleaned.trimmingCharacters(in: .whitespacesAndNewlines), "正文内容")
+    }
+
     func testAnalyzeURL() {
         let plan = AnalyzeURL.build(
             ruleUrl: "https://a.com/search?q={{key}}&page={{page}}",

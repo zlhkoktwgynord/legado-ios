@@ -16,6 +16,11 @@ struct SettingsView: View {
                     } label: {
                         Label("阅读排版", systemImage: "textformat")
                     }
+                    NavigationLink {
+                        ReplaceRulesView()
+                    } label: {
+                        Label("替换净化", systemImage: "wand.and.stars")
+                    }
                     HStack {
                         Label("默认主题", systemImage: "circle.lefthalf.filled")
                         Spacer()

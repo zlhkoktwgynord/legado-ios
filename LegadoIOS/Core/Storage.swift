@@ -42,6 +42,31 @@ enum Storage {
         try? data.write(to: fileURL(name), options: .atomic)
     }
 
+    // MARK: - 本地书正文
+
+    static var booksDir: URL {
+        let dir = root.appendingPathComponent("books", isDirectory: true)
+        ensure(dir)
+        return dir
+    }
+
+    static func bookTextFile(_ id: String) -> URL {
+        booksDir.appendingPathComponent("\(id).txt")
+    }
+
+    static func saveBookText(_ text: String, id: String) {
+        try? text.data(using: .utf8)?.write(to: bookTextFile(id), options: .atomic)
+    }
+
+    static func loadBookText(id: String) -> String? {
+        guard let data = try? Data(contentsOf: bookTextFile(id)) else { return nil }
+        return String(data: data, encoding: .utf8)
+    }
+
+    static func removeBookText(id: String) {
+        try? FileManager.default.removeItem(at: bookTextFile(id))
+    }
+
     // MARK: - 目录
 
     static func chaptersFile(_ bookUrl: String) -> URL {

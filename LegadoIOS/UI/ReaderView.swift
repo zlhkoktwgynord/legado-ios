@@ -92,7 +92,7 @@ struct ReaderView: View {
     private var chapterBody: some View {
         VStack(alignment: .leading, spacing: 0) {
             Text(chapterTitle)
-                .font(.system(size: CGFloat(config.fontSize) + 3, weight: .semibold))
+                .font(titleFont)
                 .foregroundColor(Color(hex: theme.textHex))
                 .padding(.bottom, 14)
 
@@ -103,7 +103,8 @@ struct ReaderView: View {
             LazyVStack(alignment: .leading, spacing: CGFloat(config.paragraphSpacing)) {
                 ForEach(paragraphs.indices, id: \.self) { index in
                     Text(paragraphs[index])
-                        .font(.system(size: CGFloat(config.fontSize)))
+                        .font(bodyFont)
+                        .tracking(CGFloat(config.letterSpacing))
                         .lineSpacing(CGFloat(config.lineSpacing))
                         .foregroundColor(Color(hex: theme.textHex))
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -113,8 +114,29 @@ struct ReaderView: View {
         }
     }
 
+    /// 应用替换净化后的正文
+    private var processedContent: String {
+        let rules = model.replaceRules.filter { $0.enabled }
+        guard !rules.isEmpty else { return content }
+        return TextCleaner.applyReplaceRules(content, rules: rules)
+    }
+
+    private var bodyFont: Font {
+        if config.fontFamily.isEmpty {
+            return .system(size: CGFloat(config.fontSize))
+        }
+        return .custom(config.fontFamily, size: CGFloat(config.fontSize))
+    }
+
+    private var titleFont: Font {
+        if config.fontFamily.isEmpty {
+            return .system(size: CGFloat(config.fontSize) + 3, weight: .semibold)
+        }
+        return .custom(config.fontFamily, size: CGFloat(config.fontSize) + 3)
+    }
+
     private var paragraphs: [String] {
-        content
+        processedContent
             .components(separatedBy: "\n")
             .map { $0.trimmingCharacters(in: .whitespaces) }
             .filter { !$0.isEmpty }
@@ -263,6 +285,8 @@ struct ReaderView: View {
             chapters = cached
             let index = min(max(0, currentIndex), cached.count - 1)
             loadContent(index: index)
+        } else if book.isLocal {
+            error = "本地书籍缺少目录，请重新导入"
         } else {
             guard let source = model.source(for: book) else {
                 error = "找不到书源"
@@ -297,6 +321,16 @@ struct ReaderView: View {
         if !force, let cached = Storage.loadContent(book.bookUrl, index: index) {
             content = cached
             error = nil
+            saveProgress()
+            return
+        }
+        if book.isLocal {
+            do {
+                content = try BookService.loadLocalContent(book: book, chapter: chapter)
+                error = nil
+            } catch {
+                self.error = error.localizedDescription
+            }
             saveProgress()
             return
         }
@@ -395,6 +429,19 @@ struct ReaderSettingsView: View {
     var body: some View {
         NavigationStack {
             Form {
+                Section("字体") {
+                    Picker("字体", selection: $model.readerConfig.fontFamily) {
+                        Text("系统").tag("")
+                        Text("宋体").tag("Songti SC")
+                        Text("黑体").tag("PingFang SC")
+                        Text("楷体").tag("Kaiti SC")
+                        Text("圆体").tag("Yuanti SC")
+                    }
+                    HStack {
+                        Text("字间距")
+                        Slider(value: $model.readerConfig.letterSpacing, in: 0...3, step: 0.2)
+                    }
+                }
                 Section("字号") {
                     HStack {
                         Image(systemName: "textformat.size.smaller")

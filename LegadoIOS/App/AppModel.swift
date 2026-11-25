@@ -9,10 +9,12 @@ final class AppModel: ObservableObject {
     @Published var books: [Book] = []
     @Published var readerConfig: ReaderConfig = .default
     @Published var recentKeywords: [String] = []
+    @Published var replaceRules: [ReplaceRule] = []
 
     private let sourcesFile = "sources.json"
     private let booksFile = "books.json"
     private let recentFile = "recent.json"
+    private let replaceFile = "replace.json"
 
     init() {
         load()
@@ -25,6 +27,12 @@ final class AppModel: ObservableObject {
         books = Storage.loadJSON([Book].self, booksFile) ?? []
         recentKeywords = Storage.loadJSON([String].self, recentFile) ?? []
         readerConfig = Storage.loadReaderConfig()
+        if let saved = Storage.loadJSON([ReplaceRule].self, replaceFile) {
+            replaceRules = saved
+        } else {
+            replaceRules = TextCleaner.defaultReplaceRules()
+            Storage.saveJSON(replaceRules, replaceFile)
+        }
     }
 
     func saveSources() {
@@ -42,7 +50,8 @@ final class AppModel: ObservableObject {
     // MARK: - 书源
 
     var enabledSources: [BookSource] {
-        sources.filter { $0.enabled }
+        // 4 = 视频书源，本应用不支持视频
+        sources.filter { $0.enabled && $0.bookSourceType != 4 }
     }
 
     func source(for book: Book) -> BookSource? {
@@ -90,6 +99,32 @@ final class AppModel: ObservableObject {
         saveSources()
     }
 
+    // MARK: - 替换净化
+
+    func saveReplaceRules() {
+        Storage.saveJSON(replaceRules, replaceFile)
+    }
+
+    func upsertReplaceRule(_ rule: ReplaceRule) {
+        if let index = replaceRules.firstIndex(where: { $0.id == rule.id }) {
+            replaceRules[index] = rule
+        } else {
+            replaceRules.append(rule)
+        }
+        saveReplaceRules()
+    }
+
+    func deleteReplaceRules(at offsets: IndexSet) {
+        replaceRules.remove(atOffsets: offsets)
+        saveReplaceRules()
+    }
+
+    func setReplaceRule(_ rule: ReplaceRule, enabled: Bool) {
+        guard let index = replaceRules.firstIndex(where: { $0.id == rule.id }) else { return }
+        replaceRules[index].enabled = enabled
+        saveReplaceRules()
+    }
+
     // MARK: - 书架
 
     func addToShelf(_ searchBook: SearchBook) -> Book {
@@ -99,6 +134,23 @@ final class AppModel: ObservableObject {
         var book = searchBook.toBook()
         book.durChapterIndex = 0
         book.durChapterTime = Int64(Date().timeIntervalSince1970 * 1000)
+        books.insert(book, at: 0)
+        saveBooks()
+        return book
+    }
+
+    @discardableResult
+    func addLocalBook(_ imported: LocalBookImporter.Imported) -> Book {
+        var book = imported.book
+        Storage.saveChapters(imported.chapters, bookUrl: book.bookUrl)
+        if let index = books.firstIndex(where: { $0.bookUrl == book.bookUrl }) {
+            books[index].totalChapterNum = imported.chapters.count
+            books[index].latestChapterTitle = imported.chapters.last?.title
+            saveBooks()
+            return books[index]
+        }
+        book.totalChapterNum = imported.chapters.count
+        book.latestChapterTitle = imported.chapters.last?.title
         books.insert(book, at: 0)
         saveBooks()
         return book

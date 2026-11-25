@@ -102,6 +102,16 @@ enum BookService {
         return chapters
     }
 
+    /// 本地书籍正文
+    static func loadLocalContent(book: Book, chapter: BookChapter) throws -> String {
+        if let cached = Storage.loadContent(book.bookUrl, index: chapter.index) {
+            return cached
+        }
+        let text = try LocalBookImporter.content(book: book, chapter: chapter)
+        Storage.saveContent(text, bookUrl: book.bookUrl, index: chapter.index)
+        return text
+    }
+
     static func loadContent(book: Book, chapter: BookChapter, source: BookSource,
                             force: Bool = false) async throws -> String {
         if !force, let cached = Storage.loadContent(book.bookUrl, index: chapter.index) {

@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct BookshelfView: View {
     @EnvironmentObject private var model: AppModel
@@ -8,6 +9,7 @@ struct BookshelfView: View {
     @State private var toast: String?
     @State private var errorMessage: String?
     @State private var showSettings = false
+    @State private var showImporter = false
     @State private var path = NavigationPath()
 
     private let columns = [GridItem(.adaptive(minimum: 96, maximum: 130), spacing: 16)]
@@ -24,10 +26,19 @@ struct BookshelfView: View {
             .navigationTitle("书架")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        showSettings = true
+                    Menu {
+                        Button {
+                            showImporter = true
+                        } label: {
+                            Label("导入本地 TXT", systemImage: "doc.badge.plus")
+                        }
+                        Button {
+                            showSettings = true
+                        } label: {
+                            Label("设置", systemImage: "gearshape")
+                        }
                     } label: {
-                        Image(systemName: "gearshape")
+                        Image(systemName: "ellipsis.circle")
                     }
                 }
             }
@@ -35,6 +46,11 @@ struct BookshelfView: View {
                 RouteView(route: route)
             }
             .sheet(isPresented: $showSettings) { SettingsView() }
+            .fileImporter(isPresented: $showImporter,
+                          allowedContentTypes: [.plainText, .text],
+                          allowsMultipleSelection: false) { result in
+                handleImport(result)
+            }
             .overlay(alignment: .bottom) {
                 if let toast = toast {
                     Text(toast)
@@ -73,6 +89,14 @@ struct BookshelfView: View {
                         .frame(maxWidth: 220)
                 }
                 .buttonStyle(.borderedProminent)
+
+                Button {
+                    showImporter = true
+                } label: {
+                    Text("导入本地 TXT")
+                        .frame(maxWidth: 220)
+                }
+                .buttonStyle(.bordered)
             }
             .padding(.bottom, 80)
         }
@@ -150,6 +174,25 @@ struct BookshelfView: View {
         let read = book.durChapterIndex + 1
         let count = book.totalChapterNum - read
         return count > 0 ? count : nil
+    }
+
+    private func handleImport(_ result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            let access = url.startAccessingSecurityScopedResource()
+            defer { if access { url.stopAccessingSecurityScopedResource() } }
+            do {
+                let data = try Data(contentsOf: url)
+                let imported = try LocalBookImporter.load(data: data, fileName: url.lastPathComponent)
+                let book = model.addLocalBook(imported)
+                path.append(Route.reader(book, 0))
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+        }
     }
 
     private func openDetail(_ book: Book) {
