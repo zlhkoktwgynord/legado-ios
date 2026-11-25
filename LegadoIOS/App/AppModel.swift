@@ -106,6 +106,40 @@ final class AppModel: ObservableObject {
         saveSources()
     }
 
+    // MARK: - 换源
+
+    /// 用另一个书源的同名书替换，保留阅读进度（按章节标题对齐）
+    func switchSource(book: Book,
+                      to searchBook: SearchBook,
+                      source: BookSource) async throws -> Book {
+        var updated = searchBook.toBook()
+        updated.durChapterIndex = book.durChapterIndex
+        updated.durChapterTitle = book.durChapterTitle
+        updated.durChapterTime = book.durChapterTime
+        updated.canUpdate = true
+
+        let chapters = try await SourceEngine(source: source).loadToc(updated)
+        Storage.saveChapters(chapters, bookUrl: updated.bookUrl)
+        if let title = book.durChapterTitle,
+           let match = chapters.first(where: { $0.title == title }) {
+            updated.durChapterIndex = match.index
+        } else {
+            updated.durChapterIndex = min(book.durChapterIndex, max(0, chapters.count - 1))
+        }
+        updated.totalChapterNum = chapters.count
+        updated.latestChapterTitle = chapters.last?.title
+        updated.durChapterTitle = chapters.indices.contains(updated.durChapterIndex)
+            ? chapters[updated.durChapterIndex].title : updated.durChapterTitle
+
+        if let index = books.firstIndex(where: { $0.bookUrl == book.bookUrl }) {
+            books[index] = updated
+        } else {
+            books.insert(updated, at: 0)
+        }
+        saveBooks()
+        return updated
+    }
+
     // MARK: - 替换净化
 
     func saveReplaceRules() {
