@@ -253,10 +253,14 @@ struct SearchView: View {
                 }
             }
             .padding(.horizontal, 12)
-            .frame(height: 38)
+            .frame(height: 42)
             .background(
-                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                    .fill(LegadoTheme.fill(scheme))
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(LegadoTheme.card(scheme))
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .strokeBorder(LegadoTheme.divider(scheme), lineWidth: 1)
             )
 
             Button {
@@ -440,13 +444,13 @@ struct SearchBookRow: View {
         Button(action: onOpen) {
             HStack(alignment: .top, spacing: 12) {
                 Color.clear
-                    .frame(width: 56, height: 76)
+                    .frame(width: 72, height: 104)
                     .overlay(RemoteImage(urlString: book.coverUrl ?? ""))
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
 
                 VStack(alignment: .leading, spacing: 5) {
                     Text(book.name)
-                        .font(.system(size: 16, weight: .medium))
+                        .font(.system(size: 17))
                         .foregroundColor(LegadoTheme.primaryText(scheme))
                         .lineLimit(1)
                     Text(book.author)

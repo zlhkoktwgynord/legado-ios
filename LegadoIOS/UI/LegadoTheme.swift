@@ -1,4 +1,7 @@
 import SwiftUI
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// 对齐安卓「阅读」默认主题的配色 / 圆角 / 组件
 /// 日间：背景 #F7F7FA，卡片白，顶栏 #F1F2F6，强调色 Material Red 600
@@ -6,12 +9,12 @@ import SwiftUI
 enum LegadoTheme {
 
     /// 安卓版默认强调色（md_red_600）
-    static let accent = Color(hex: "#E53935")
+    static let accent = Color(hex: "#0A84FF")
 
     static func isDark(_ scheme: ColorScheme) -> Bool { scheme == .dark }
 
     static func background(_ scheme: ColorScheme) -> Color {
-        isDark(scheme) ? Color(hex: "#121212") : Color(hex: "#F7F7FA")
+        isDark(scheme) ? Color(hex: "#111113") : Color(hex: "#F7F7FA")
     }
 
     /// 顶栏 / 标签栏底色
@@ -20,7 +23,7 @@ enum LegadoTheme {
     }
 
     static func card(_ scheme: ColorScheme) -> Color {
-        isDark(scheme) ? Color(hex: "#1E1E1E") : Color(hex: "#FFFFFF")
+        isDark(scheme) ? Color(hex: "#1C1C1E") : Color(hex: "#FFFFFF")
     }
 
     static func primaryText(_ scheme: ColorScheme) -> Color {
@@ -28,7 +31,7 @@ enum LegadoTheme {
     }
 
     static func secondaryText(_ scheme: ColorScheme) -> Color {
-        Color(white: isDark(scheme) ? 1 : 0, opacity: 0.54)
+        Color(white: isDark(scheme) ? 1 : 0, opacity: isDark(scheme) ? 0.70 : 0.54)
     }
 
     static func tertiaryText(_ scheme: ColorScheme) -> Color {
@@ -166,5 +169,22 @@ struct LegadoDivider: View {
             .fill(LegadoTheme.divider(scheme))
             .frame(height: 0.5)
             .padding(.leading, 54)
+    }
+}
+
+/// 只圆上面两个角（阅读底部面板用）
+struct RoundedCorner: Shape {
+    var radius: CGFloat = 10
+    var corners: UIRectCorner = .allCorners
+
+    func path(in rect: CGRect) -> Path {
+        #if canImport(UIKit)
+        let path = UIBezierPath(roundedRect: rect,
+                                byRoundingCorners: corners,
+                                cornerRadii: CGSize(width: radius, height: radius))
+        return Path(path.cgPath)
+        #else
+        return Path(roundedRect: rect, cornerRadius: radius)
+        #endif
     }
 }

@@ -7,17 +7,19 @@ enum Route: Hashable {
     case sourceDetail(BookSource)
 }
 
-/// 主界面外壳：照搬安卓版「阅读」的布局
-/// 五页横向分页（书架 / 发现 / RSS / 阅读统计 / 我的）
-/// + 底部悬浮毛玻璃导航栏（图标 + 胶囊指示器）
-/// + 右下角圆形搜索按钮 + 左侧抽屉
+/// 主界面外壳：照搬安卓版「阅读」
+/// 五页横向分页（书架 / 发现 / 订阅 / 阅读记录 / 我的）
+/// + 底部 48pt 悬浮毛玻璃导航栏（5 个 23pt 图标 + 切换时闪现的 52×40 指示器）
+/// + 右下角 48pt 圆形搜索按钮
 struct RootView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.colorScheme) private var scheme
 
     @State private var tab: Int = RootView.initialTab
     @State private var showSearch: Bool = RootView.debugOpensSearch
-    @State private var showDrawer = false
+    @State private var indicatorTab = 0
+    @State private var indicatorOpacity: Double = 0
+    @State private var fadeToken = 0
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -25,8 +27,7 @@ struct RootView: View {
                 .ignoresSafeArea()
 
             TabView(selection: $tab) {
-                BookshelfView(onSearch: { showSearch = true },
-                              onOpenDrawer: { withAnimation(.easeOut(duration: 0.22)) { showDrawer = true } })
+                BookshelfView(onSearch: { showSearch = true })
                     .tag(0)
                 DiscoverView()
                     .tag(1)
@@ -42,7 +43,6 @@ struct RootView: View {
 
             bottomBar
         }
-        .overlay { drawerLayer }
         .fullScreenCover(isPresented: $showSearch) {
             SearchView()
         }
@@ -52,32 +52,38 @@ struct RootView: View {
 
     private var bottomBar: some View {
         HStack(spacing: 10) {
-            GlassSurface(cornerRadius: 26) {
-                HStack(spacing: 0) {
-                    ForEach(HomeTab.allCases, id: \.rawValue) { item in
-                        Button {
-                            withAnimation(.easeOut(duration: 0.18)) { tab = item.rawValue }
-                        } label: {
-                            ZStack {
-                                if tab == item.rawValue {
-                                    Capsule()
-                                        .fill(LegadoTheme.accent.opacity(0.14))
-                                        .frame(width: 52, height: 40)
-                                }
-                                Image(systemName: item.icon)
-                                    .font(.system(size: 19, weight: tab == item.rawValue ? .semibold : .regular))
+            GlassSurface(cornerRadius: 24) {
+                ZStack(alignment: .leading) {
+                    HStack(spacing: 0) {
+                        ForEach(HomeTab.allCases, id: \.rawValue) { item in
+                            Button {
+                                select(item.rawValue)
+                            } label: {
+                                Image(systemName: tab == item.rawValue ? item.selectedIcon : item.icon)
+                                    .font(.system(size: 23, weight: .regular))
                                     .foregroundColor(tab == item.rawValue
                                                      ? LegadoTheme.accent
-                                                     : LegadoTheme.secondaryText(scheme))
+                                                     : LegadoTheme.secondaryText(scheme).opacity(0.85))
+                                    .frame(maxWidth: .infinity)
+                                    .frame(height: 48)
+                                    .contentShape(Rectangle())
                             }
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 48)
-                            .contentShape(Rectangle())
+                            .buttonStyle(.plain)
                         }
-                        .buttonStyle(.plain)
                     }
+                    .padding(.horizontal, 6)
+
+                    GeometryReader { geo in
+                        let itemWidth = geo.size.width / CGFloat(HomeTab.allCases.count)
+                        Capsule()
+                            .fill(LegadoTheme.accent.opacity(0.16))
+                            .frame(width: 52, height: 40)
+                            .offset(x: itemWidth * CGFloat(indicatorTab) + (itemWidth - 52) / 2,
+                                    y: 4)
+                            .opacity(indicatorOpacity)
+                    }
+                    .allowsHitTesting(false)
                 }
-                .padding(.horizontal, 6)
                 .frame(height: 48)
             }
             .frame(height: 48)
@@ -87,8 +93,8 @@ struct RootView: View {
             } label: {
                 GlassSurface(cornerRadius: 24) {
                     Image(systemName: "magnifyingglass")
-                        .font(.system(size: 19, weight: .medium))
-                        .foregroundColor(LegadoTheme.primaryText(scheme))
+                        .font(.system(size: 22, weight: .regular))
+                        .foregroundColor(LegadoTheme.secondaryText(scheme).opacity(0.9))
                         .frame(width: 48, height: 48)
                 }
             }
@@ -98,119 +104,21 @@ struct RootView: View {
         .padding(.bottom, 10)
     }
 
-    // MARK: - 左侧抽屉
-
-    @ViewBuilder
-    private var drawerLayer: some View {
-        GeometryReader { geo in
-            ZStack(alignment: .leading) {
-                if showDrawer {
-                    Color.black.opacity(0.4)
-                        .ignoresSafeArea()
-                        .onTapGesture {
-                            withAnimation(.easeOut(duration: 0.2)) { showDrawer = false }
-                        }
-                    drawer
-                        .frame(width: geo.size.width * 0.66)
-                        .transition(.move(edge: .leading))
-                }
+    private func select(_ value: Int) {
+        withAnimation(.easeOut(duration: 0.18)) { tab = value }
+        indicatorTab = value
+        fadeToken += 1
+        let token = fadeToken
+        withAnimation(.interpolatingSpring(stiffness: 380, damping: 22)) {
+            indicatorOpacity = 1
+        }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 780_000_000)
+            guard token == fadeToken else { return }
+            withAnimation(.easeOut(duration: 0.22)) {
+                indicatorOpacity = 0
             }
         }
-        .ignoresSafeArea()
-    }
-
-    private var drawer: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            HStack(spacing: 12) {
-                ZStack {
-                    Circle()
-                        .fill(LegadoTheme.accent.opacity(0.16))
-                    Image(systemName: "book.fill")
-                        .font(.system(size: 18))
-                        .foregroundColor(LegadoTheme.accent)
-                }
-                .frame(width: 48, height: 48)
-
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("阅读")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(LegadoTheme.primaryText(scheme))
-                    Text(drawerSummary)
-                        .font(.system(size: 13))
-                        .foregroundColor(LegadoTheme.secondaryText(scheme))
-                        .lineLimit(2)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 16)
-            .padding(.top, 56)
-            .padding(.bottom, 18)
-
-            ScrollView {
-                VStack(spacing: 6) {
-                    ForEach(HomeTab.allCases, id: \.rawValue) { item in
-                        Button {
-                            tab = item.rawValue
-                            withAnimation(.easeOut(duration: 0.18)) { showDrawer = false }
-                        } label: {
-                            HStack(spacing: 14) {
-                                Image(systemName: item.icon)
-                                    .font(.system(size: 18))
-                                    .frame(width: 24)
-                                Text(item.title)
-                                    .font(.system(size: 17, weight: .semibold))
-                                Spacer()
-                            }
-                            .foregroundColor(tab == item.rawValue
-                                             ? LegadoTheme.accent
-                                             : LegadoTheme.primaryText(scheme))
-                            .padding(.horizontal, 16)
-                            .frame(height: 48)
-                            .contentShape(Rectangle())
-                        }
-                        .buttonStyle(.plain)
-                    }
-
-                    Rectangle()
-                        .fill(LegadoTheme.divider(scheme))
-                        .frame(height: 0.5)
-                        .padding(.vertical, 8)
-                        .padding(.horizontal, 16)
-
-                    Button {
-                        showDrawer = false
-                        showSearch = true
-                    } label: {
-                        HStack(spacing: 14) {
-                            Image(systemName: "magnifyingglass")
-                                .font(.system(size: 18))
-                                .frame(width: 24)
-                            Text("搜索")
-                                .font(.system(size: 16))
-                            Spacer()
-                        }
-                        .foregroundColor(LegadoTheme.secondaryText(scheme))
-                        .padding(.horizontal, 16)
-                        .frame(height: 44)
-                        .contentShape(Rectangle())
-                    }
-                    .buttonStyle(.plain)
-                }
-                .padding(.bottom, 24)
-            }
-
-            Spacer(minLength: 0)
-        }
-        .frame(maxHeight: .infinity, alignment: .top)
-        .background(.ultraThinMaterial)
-        .ignoresSafeArea()
-    }
-
-    private var drawerSummary: String {
-        let today = Calendar.current.startOfDay(for: Date())
-        let readingToday = model.books.filter { $0.durChapterTime > 0
-            && Date(timeIntervalSince1970: Double($0.durChapterTime) / 1000) >= today }.count
-        return "书架 \(model.books.count) 本 · 今日在读 \(readingToday) 本"
     }
 
     // MARK: - 调试入口（截图流水线用）
@@ -237,8 +145,8 @@ enum HomeTab: Int, CaseIterable {
         switch self {
         case .shelf: return "书架"
         case .discover: return "发现"
-        case .rss: return "RSS"
-        case .stats: return "阅读统计"
+        case .rss: return "订阅"
+        case .stats: return "阅读记录"
         case .mine: return "我的"
         }
     }
@@ -250,6 +158,16 @@ enum HomeTab: Int, CaseIterable {
         case .rss: return "dot.radiowaves.left.and.right"
         case .stats: return "chart.bar"
         case .mine: return "person"
+        }
+    }
+
+    var selectedIcon: String {
+        switch self {
+        case .shelf: return "books.vertical.fill"
+        case .discover: return "safari.fill"
+        case .rss: return "dot.radiowaves.left.and.right"
+        case .stats: return "chart.bar.fill"
+        case .mine: return "person.fill"
         }
     }
 }

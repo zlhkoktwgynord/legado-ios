@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// 「我的」页：书源 / 净化 / 外观 / 缓存 / 关于
+/// 「我的」页：40pt 搜索框 + 四组卡片式设置（无图标，行高 60pt）
 struct MyConfigView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.colorScheme) private var scheme
@@ -8,88 +8,65 @@ struct MyConfigView: View {
     @State private var showSourceImport = false
     @State private var showAbout = false
     @State private var showClearCache = false
-    @State private var showClearDone = false
+    @State private var cleared = false
+    @State private var keyword = ""
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
-                    profileCard
+                VStack(spacing: 8) {
+                    searchField
 
-                    LegadoSectionCard("内容") {
-                        NavigationLink {
-                            SourceListView()
-                        } label: {
-                            LegadoListRow(icon: "square.stack.3d.up", title: "书源管理",
-                                          detail: "\(model.sources.count) 个")
-                        }
-                        .buttonStyle(.plain)
-                        LegadoDivider()
-                        Button {
-                            showSourceImport = true
-                        } label: {
-                            LegadoListRow(icon: "square.and.arrow.down", title: "导入书源", showChevron: false)
-                        }
-                        .buttonStyle(.plain)
-                        LegadoDivider()
-                        NavigationLink {
-                            ReplaceRulesView()
-                        } label: {
-                            LegadoListRow(icon: "wand.and.stars", title: "替换净化",
-                                          detail: "\(model.replaceRules.count) 条")
-                        }
-                        .buttonStyle(.plain)
+                    group("内容与规则") {
+                        link("书源管理", "\(model.sources.count) 个") { SourceListView() }
+                        row("导入书源") { showSourceImport = true }
+                        link("替换净化", "\(model.replaceRules.count) 条") { ReplaceRulesView() }
+                        row("导入本地 TXT") { showImporter = true }
                     }
 
-                    LegadoSectionCard("阅读") {
-                        NavigationLink {
-                            SettingsView()
-                        } label: {
-                            LegadoListRow(icon: "textformat", title: "阅读排版与外观")
-                        }
-                        .buttonStyle(.plain)
-                        LegadoDivider()
+                    group("外观与 AI") {
+                        link("主题与排版", appAppearance) { SettingsView() }
                         appearanceRow
                     }
 
-                    LegadoSectionCard("其他") {
-                        Button {
-                            showClearCache = true
-                        } label: {
-                            LegadoListRow(icon: "internaldrive", title: "清空正文缓存",
-                                          detail: showClearDone ? "已清空" : nil,
-                                          showChevron: false)
-                        }
-                        .buttonStyle(.plain)
-                        LegadoDivider()
-                        Button {
-                            showAbout = true
-                        } label: {
-                            LegadoListRow(icon: "info.circle", title: "关于阅读",
-                                          detail: appVersion)
-                        }
-                        .buttonStyle(.plain)
+                    group("同步与服务") {
+                        row("缓存管理", detail: cleared ? "已清空" : nil) { showClearCache = true }
+                        disabledRow("备份与恢复", "还没移植")
+                        disabledRow("Web 服务", "还没移植")
+                    }
+
+                    group("工具与关于") {
+                        disabledRow("书签", "还没移植")
+                        disabledRow("文件管理", "还没移植")
+                        row("关于", detail: appVersion) { showAbout = true }
                     }
 
                     Text("本软件不提供任何书籍内容，书源由使用者自行导入，请支持正版。")
-                        .font(.system(size: 11))
-                        .foregroundColor(LegadoTheme.tertiaryText(scheme))
+                        .font(.system(size: 12))
+                        .foregroundColor(LegadoTheme.secondaryText(scheme))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
-                        .padding(.top, 8)
+                        .padding(.top, 12)
                 }
-                .padding(.horizontal, 16)
-                .padding(.top, 8)
-                .padding(.bottom, 120)
+                .padding(.horizontal, 12)
+                .padding(.top, 4)
+                .padding(.bottom, 100)
             }
             .background(LegadoTheme.background(scheme).ignoresSafeArea())
             .toolbar(.hidden, for: .navigationBar)
         }
         .sheet(isPresented: $showSourceImport) { SourceImportView() }
+        .sheet(isPresented: $showImporter) {
+            DocumentPicker { url in
+                showImporter = false
+                importLocal(url)
+            }
+            .ignoresSafeArea()
+        }
         .confirmationDialog("清空已缓存的章节正文？", isPresented: $showClearCache, titleVisibility: .visible) {
             Button("清空", role: .destructive) {
                 Storage.clearContentCache()
-                showClearDone = true
+                cleared = true
             }
             Button("取消", role: .cancel) {}
         }
@@ -100,59 +77,148 @@ struct MyConfigView: View {
         }
     }
 
-    private var profileCard: some View {
-        HStack(spacing: 14) {
-            ZStack {
-                Circle().fill(LegadoTheme.accent.opacity(0.14))
-                Image(systemName: "book.fill")
-                    .font(.system(size: 20))
-                    .foregroundColor(LegadoTheme.accent)
-            }
-            .frame(width: 52, height: 52)
+    @State private var showImporter = false
 
-            VStack(alignment: .leading, spacing: 5) {
-                Text("阅读")
-                    .font(.system(size: 19, weight: .semibold))
-                    .foregroundColor(LegadoTheme.primaryText(scheme))
-                Text("书架 \(model.books.count) 本 · 书源 \(model.sources.count) 个")
-                    .font(.system(size: 12))
-                    .foregroundColor(LegadoTheme.secondaryText(scheme))
+    private var searchField: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass")
+                .font(.system(size: 15))
+                .foregroundColor(LegadoTheme.tertiaryText(scheme))
+            TextField("搜索", text: $keyword)
+                .font(.system(size: 14))
+                .autocorrectionDisabled()
+            if !keyword.isEmpty {
+                Button {
+                    keyword = ""
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.system(size: 14))
+                        .foregroundColor(LegadoTheme.tertiaryText(scheme))
+                }
+                .buttonStyle(.plain)
             }
-            Spacer()
         }
-        .padding(16)
+        .padding(.horizontal, 12)
+        .frame(height: 40)
         .background(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
                 .fill(LegadoTheme.card(scheme))
         )
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(LegadoTheme.divider(scheme), lineWidth: 1)
+        )
+        .padding(.top, 4)
+    }
+
+    private func group<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+        VStack(alignment: .leading, spacing: 0) {
+            Text(title)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(LegadoTheme.accent)
+                .padding(.leading, 4)
+                .padding(.top, 12)
+                .padding(.bottom, 8)
+
+            VStack(spacing: 0) {
+                content()
+            }
+            .background(
+                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                    .fill(LegadoTheme.card(scheme))
+            )
+        }
+    }
+
+    private func row(_ title: String, detail: String? = nil, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            HStack {
+                Text(title)
+                    .font(.system(size: 16))
+                    .foregroundColor(LegadoTheme.primaryText(scheme))
+                Spacer()
+                if let detail = detail {
+                    Text(detail)
+                        .font(.system(size: 14))
+                        .foregroundColor(LegadoTheme.secondaryText(scheme))
+                        .lineLimit(1)
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(LegadoTheme.tertiaryText(scheme))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(minHeight: 60)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func link<Destination: View>(_ title: String, _ detail: String? = nil,
+                                         @ViewBuilder destination: @escaping () -> Destination) -> some View {
+        NavigationLink {
+            destination()
+        } label: {
+            HStack {
+                Text(title)
+                    .font(.system(size: 16))
+                    .foregroundColor(LegadoTheme.primaryText(scheme))
+                Spacer()
+                if let detail = detail {
+                    Text(detail)
+                        .font(.system(size: 14))
+                        .foregroundColor(LegadoTheme.secondaryText(scheme))
+                }
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(LegadoTheme.tertiaryText(scheme))
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .frame(minHeight: 60)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func disabledRow(_ title: String, _ note: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.system(size: 16))
+                .foregroundColor(LegadoTheme.tertiaryText(scheme))
+            Spacer()
+            Text(note)
+                .font(.system(size: 13))
+                .foregroundColor(LegadoTheme.tertiaryText(scheme))
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(minHeight: 60)
     }
 
     private var appearanceRow: some View {
-        HStack(spacing: 10) {
-            Image(systemName: "circle.lefthalf.filled")
-                .font(.system(size: 17))
-                .foregroundColor(LegadoTheme.secondaryText(scheme))
-                .frame(width: 24)
-            Text("外观")
+        HStack {
+            Text("主题模式")
                 .font(.system(size: 16))
                 .foregroundColor(LegadoTheme.primaryText(scheme))
             Spacer()
-            HStack(spacing: 0) {
+            HStack(spacing: 2) {
                 ForEach(Array(["跟随系统", "浅色", "深色"].enumerated()), id: \.offset) { index, title in
                     Button {
                         model.setAppearance(index)
                     } label: {
                         Text(title)
-                            .font(.system(size: 12, weight: model.appearance == index ? .semibold : .regular))
+                            .font(.system(size: 13, weight: model.appearance == index ? .medium : .regular))
                             .foregroundColor(model.appearance == index
                                              ? LegadoTheme.accent
                                              : LegadoTheme.secondaryText(scheme))
-                            .padding(.horizontal, 10)
+                            .padding(.horizontal, 8)
                             .frame(height: 28)
                             .background(
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                RoundedRectangle(cornerRadius: 8, style: .continuous)
                                     .fill(model.appearance == index
-                                          ? LegadoTheme.accent.opacity(0.14)
+                                          ? LegadoTheme.accent.opacity(0.12)
                                           : Color.clear)
                             )
                     }
@@ -161,11 +227,34 @@ struct MyConfigView: View {
             }
         }
         .padding(.horizontal, 16)
-        .frame(height: 52)
+        .frame(minHeight: 60)
+    }
+
+    private var appAppearance: String {
+        switch model.appearance {
+        case 1: return "浅色"
+        case 2: return "深色"
+        default: return "跟随系统"
+        }
     }
 
     private var appVersion: String {
-        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "3.1"
+        let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "4.0"
         return "v\(version)"
+    }
+
+    private func importLocal(_ url: URL) {
+        let name = url.lastPathComponent
+        Task { @MainActor in
+            do {
+                let data = try Data(contentsOf: url)
+                let imported = try await Task.detached(priority: .userInitiated) {
+                    try LocalBookImporter.load(data: data, fileName: name)
+                }.value
+                _ = model.addLocalBook(imported)
+            } catch {
+                print("导入失败", error)
+            }
+        }
     }
 }

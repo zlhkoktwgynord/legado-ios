@@ -20,6 +20,8 @@ struct ReaderView: View {
     @State private var showChapterList = false
     @State private var showStyle = false
     @State private var showSwitchSource = false
+    @State private var showSettings = false
+    @State private var showReadAloudHint = false
     @State private var jumpToLastPage = false
     @State private var pageSize: CGSize = .zero
     @State private var overlayIndex: Int?
@@ -96,6 +98,14 @@ struct ReaderView: View {
                 dismiss()
             }
         }
+        .sheet(isPresented: $showSettings) {
+            SettingsView()
+        }
+        .alert("朗读还没移植", isPresented: $showReadAloudHint) {
+            Button("好", role: .cancel) {}
+        } message: {
+            Text("安卓版用系统 TTS 朗读，iOS 版换成 AVSpeechSynthesizer 需要单独排期。")
+        }
         .sheet(isPresented: $showStyle) {
             ReaderStylePanel()
                 .presentationDetents([.height(540)])
@@ -153,29 +163,30 @@ struct ReaderView: View {
     // MARK: - 底部状态条（电量 / 时间 / 页码 / 进度）
 
     private var footer: some View {
-        TimelineView(.everyMinute) { context in
-            HStack(spacing: 6) {
-                Text(batteryText)
-                Spacer()
-                if pageCount > 0 {
-                    Text("\(pageIndex + 1)/\(pageCount)")
-                    Text(progressText)
-                }
+        HStack(spacing: 6) {
+            Text(chapterTitle)
+                .lineLimit(1)
+            Spacer()
+            if pageCount > 0 {
+                Text("\(pageIndex + 1)/\(pageCount)  \(progressText)")
             }
-            .font(.system(size: 10))
-            .foregroundColor(textColor.opacity(0.5))
+        }
+        .font(.system(size: 12))
+        .foregroundColor(textColor.opacity(0.45))
+        .padding(.top, 4)
+        .overlay(alignment: .top) {
+            Rectangle().fill(textColor.opacity(0.10)).frame(height: 0.5)
         }
     }
 
     private var header: some View {
         TimelineView(.everyMinute) { context in
             HStack(spacing: 8) {
-                Text(chapterTitle)
-                    .font(.system(size: 11))
-                    .lineLimit(1)
-                Spacer()
                 Text(timeText(context.date))
-                    .font(.system(size: 11))
+                    .font(.system(size: 12))
+                Spacer()
+                Text(batteryText)
+                    .font(.system(size: 12))
             }
             .foregroundColor(textColor.opacity(0.45))
             .padding(.horizontal, CGFloat(config.padding))
@@ -214,16 +225,27 @@ struct ReaderView: View {
                 Image(systemName: "chevron.left")
                     .font(.system(size: 17, weight: .semibold))
             }
-            Text(chapterTitle)
-                .font(.system(size: 15))
-                .lineLimit(1)
+            VStack(alignment: .leading, spacing: 2) {
+                Text(chapterTitle)
+                    .font(.system(size: 15, weight: .bold))
+                    .lineLimit(1)
+                Text(book.originName)
+                    .font(.system(size: 12))
+                    .opacity(0.72)
+                    .lineLimit(1)
+            }
             Spacer()
-            Text(book.originName)
-                .font(.system(size: 11))
-                .padding(.horizontal, 8)
-                .padding(.vertical, 3)
-                .background(Color.accentColor.opacity(0.15))
-                .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
+            Button {
+                showSwitchSource = true
+            } label: {
+                Text("换源")
+                    .font(.system(size: 12))
+                    .frame(minWidth: 64, minHeight: 34)
+                    .padding(.horizontal, 8)
+                    .background(LegadoTheme.accent.opacity(0.12))
+                    .clipShape(RoundedRectangle(cornerRadius: 17, style: .continuous))
+            }
+            .buttonStyle(.plain)
         }
         .foregroundColor(textColor)
         .padding(.horizontal, 16)
@@ -234,43 +256,58 @@ struct ReaderView: View {
     }
 
     private var bottomBar: some View {
-        VStack(spacing: 12) {
-            HStack(spacing: 8) {
+        VStack(spacing: 0) {
+            HStack(spacing: 10) {
                 Button {
                     load(index: currentIndex - 1)
                 } label: {
-                    Text("上一章").font(.system(size: 12))
+                    Text("上一章")
+                        .font(.system(size: 13))
+                        .frame(minWidth: 72, minHeight: 38)
                 }
                 .disabled(currentIndex <= 0)
 
                 Slider(value: pageBinding,
                        in: 0...Double(max(pageCount - 1, 1)),
                        step: 1)
-                    .tint(textColor.opacity(0.8))
+                    .tint(LegadoTheme.accent)
                     .disabled(pageCount == 0)
 
                 Button {
                     load(index: currentIndex + 1)
                 } label: {
-                    Text("下一章").font(.system(size: 12))
+                    Text("下一章")
+                        .font(.system(size: 13))
+                        .frame(minWidth: 72, minHeight: 38)
                 }
                 .disabled(currentIndex >= chapters.count - 1)
             }
+            .padding(.horizontal, 16)
+            .padding(.top, 6)
+
+            Rectangle()
+                .fill(textColor.opacity(0.10))
+                .frame(height: 0.5)
+                .padding(.vertical, 8)
 
             HStack(spacing: 0) {
                 barButton("目录", "list.bullet") { showChapterList = true }
-                barButton(theme.isDark ? "日间" : "夜间",
-                          theme.isDark ? "sun.max" : "moon") { toggleNight() }
-                barButton("换源", "arrow.left.arrow.right") { showSwitchSource = true }
-                barButton("Aa", "textformat.size") { showStyle = true }
+                barButton("朗读", "waveform") { showReadAloudHint = true }
+                barButton("界面", "textformat.size") { showStyle = true }
+                barButton("设置", "gearshape") { showSettings = true }
             }
+            .padding(.horizontal, 8)
+            .padding(.bottom, 6)
         }
         .foregroundColor(textColor)
-        .padding(.horizontal, 16)
-        .padding(.top, 10)
-        .padding(.bottom, 14)
-        .background(Color(hex: theme.backgroundHex).opacity(0.97))
-        .overlay(alignment: .top) { Divider().opacity(0.25) }
+        .background(
+            Color(hex: theme.backgroundHex).opacity(0.98)
+                .clipShape(RoundedCorner(radius: 10, corners: [.topLeft, .topRight]))
+                .ignoresSafeArea(edges: .bottom)
+        )
+        .overlay(alignment: .top) {
+            Rectangle().fill(textColor.opacity(0.08)).frame(height: 0.5)
+        }
     }
 
     private func toggleNight() {
@@ -282,13 +319,16 @@ struct ReaderView: View {
 
     private func barButton(_ title: String, _ icon: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
-            VStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 17))
-                Text(title).font(.system(size: 10))
+            VStack(spacing: 8) {
+                Image(systemName: icon).font(.system(size: 20, weight: .regular))
+                Text(title).font(.system(size: 12))
             }
             .frame(maxWidth: .infinity)
+            .frame(minHeight: 72)
             .foregroundColor(textColor)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
     }
 
     private var pageBinding: Binding<Double> {

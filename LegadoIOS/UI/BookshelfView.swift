@@ -1,15 +1,15 @@
 import SwiftUI
 
-/// 书架：顶部「书架 ▾」+ 分组标签栏 + 网格/列表两种样式
+/// 书架：24sp 大标题 + 38pt 分组标签栏 + 列表 / 网格（1~5 列）
 struct BookshelfView: View {
     @EnvironmentObject private var model: AppModel
     @Environment(\.colorScheme) private var scheme
 
     var onSearch: () -> Void = {}
-    var onOpenDrawer: () -> Void = {}
 
     @State private var path = NavigationPath()
-    @State private var style: Int = UserDefaults.standard.integer(forKey: "shelfStyle")
+    /// 0 列表 1 紧凑列表 2~5 网格列数
+    @State private var columns: Int = UserDefaults.standard.integer(forKey: "shelfColumns")
     @State private var filter: Int = 0
     @State private var sortMode: Int = 0
     @State private var showImporter = false
@@ -19,12 +19,6 @@ struct BookshelfView: View {
     @State private var toast: String?
     @State private var errorMessage: String?
     @State private var refreshing: Set<String> = []
-
-    private let gridColumns = [
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14),
-        GridItem(.flexible(), spacing: 14)
-    ]
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -92,62 +86,63 @@ struct BookshelfView: View {
         return list
     }
 
-    // MARK: - 顶部标题
+    // MARK: - 标题行（42pt）
 
     private var header: some View {
-        HStack(spacing: 4) {
+        HStack(spacing: 2) {
             Menu {
-                Button {
-                    setStyle(0)
-                } label: {
-                    Label("网格视图", systemImage: "square.grid.3x3")
-                }
-                Button {
-                    setStyle(1)
-                } label: {
-                    Label("列表视图", systemImage: "list.bullet")
-                }
+                Button("全部") { filter = 0 }
+                Button("在读") { filter = 1 }
+                Button("本地") { filter = 2 }
             } label: {
-                HStack(spacing: 2) {
+                HStack(spacing: 4) {
                     Text("书架")
-                        .font(.system(size: 24, weight: .semibold))
+                        .font(.system(size: 24, weight: .bold))
                         .foregroundColor(LegadoTheme.primaryText(scheme))
                     Image(systemName: "chevron.down")
                         .font(.system(size: 13, weight: .semibold))
                         .foregroundColor(LegadoTheme.secondaryText(scheme))
                 }
             }
+            .buttonStyle(.plain)
 
             Spacer()
 
             Menu {
-                Button("最近阅读") { sortMode = 0 }
-                Button("书名") { sortMode = 1 }
-                Button("加入顺序") { sortMode = 2 }
-            } label: {
-                Image(systemName: "arrow.up.arrow.down")
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(LegadoTheme.secondaryText(scheme))
-                    .frame(width: 34, height: 34)
-            }
-
-            Menu {
+                Button {
+                    showImporter = true
+                } label: {
+                    Label("添加本地书籍", systemImage: "doc.badge.plus")
+                }
                 Button {
                     showSourceImport = true
                 } label: {
                     Label("导入书源", systemImage: "square.and.arrow.down")
                 }
                 Button {
-                    showImporter = true
-                } label: {
-                    Label("导入本地 TXT", systemImage: "doc.badge.plus")
-                }
-                Divider()
-                Button {
                     showSourceList = true
                 } label: {
                     Label("书源管理", systemImage: "square.stack.3d.up")
                 }
+                Divider()
+                Menu {
+                    Button("列表") { setColumns(0) }
+                    Button("紧凑列表") { setColumns(1) }
+                    Button("2 列") { setColumns(2) }
+                    Button("3 列") { setColumns(3) }
+                    Button("4 列") { setColumns(4) }
+                    Button("5 列") { setColumns(5) }
+                } label: {
+                    Label("书架布局", systemImage: "square.grid.3x3")
+                }
+                Menu {
+                    Button("最近阅读") { sortMode = 0 }
+                    Button("书名") { sortMode = 1 }
+                    Button("加入顺序") { sortMode = 2 }
+                } label: {
+                    Label("排序", systemImage: "arrow.up.arrow.down")
+                }
+                Divider()
                 Button {
                     showSettings = true
                 } label: {
@@ -155,51 +150,49 @@ struct BookshelfView: View {
                 }
             } label: {
                 Image(systemName: "ellipsis")
-                    .font(.system(size: 17, weight: .medium))
-                    .foregroundColor(LegadoTheme.secondaryText(scheme))
+                    .font(.system(size: 18, weight: .medium))
+                    .foregroundColor(LegadoTheme.primaryText(scheme).opacity(0.75))
                     .frame(width: 34, height: 34)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
 
             Button {
-                onOpenDrawer()
+                onSearch()
             } label: {
-                Image(systemName: "person.crop.circle")
-                    .font(.system(size: 18))
-                    .foregroundColor(LegadoTheme.secondaryText(scheme))
+                Image(systemName: "magnifyingglass")
+                    .font(.system(size: 17, weight: .medium))
+                    .foregroundColor(LegadoTheme.primaryText(scheme).opacity(0.75))
                     .frame(width: 34, height: 34)
+                    .contentShape(Rectangle())
             }
+            .buttonStyle(.plain)
         }
-        .padding(.horizontal, 16)
-        .padding(.top, 4)
-        .padding(.bottom, 8)
+        .padding(.leading, 16)
+        .padding(.trailing, 10)
+        .frame(height: 42)
+        .padding(.top, 6)
     }
 
-    // MARK: - 分组标签栏
+    // MARK: - 分组标签栏（38pt）
 
     private var tagBar: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack(spacing: 8) {
+            HStack(spacing: 2) {
                 tagChip("全部", 0)
                 tagChip("在读", 1)
                 tagChip("本地", 2)
-                Button {
-                    showSourceImport = true
-                } label: {
-                    Image(systemName: "plus")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundColor(LegadoTheme.secondaryText(scheme))
-                        .frame(width: 32, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 15, style: .continuous)
-                                .fill(LegadoTheme.fill(scheme))
-                        )
-                }
-                .buttonStyle(.plain)
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 4)
+            .padding(.horizontal, 3)
         }
-        .padding(.bottom, 6)
+        .frame(height: 38)
+        .background(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .fill(LegadoTheme.surface(scheme))
+        )
+        .padding(.horizontal, 16)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
     }
 
     private func tagChip(_ title: String, _ value: Int) -> some View {
@@ -207,13 +200,16 @@ struct BookshelfView: View {
             withAnimation(.easeOut(duration: 0.15)) { filter = value }
         } label: {
             Text(title)
-                .font(.system(size: 14, weight: filter == value ? .semibold : .regular))
-                .foregroundColor(filter == value ? LegadoTheme.accent : LegadoTheme.secondaryText(scheme))
-                .padding(.horizontal, 14)
-                .frame(height: 30)
+                .font(.system(size: 13))
+                .foregroundColor(filter == value
+                                 ? LegadoTheme.accent
+                                 : LegadoTheme.primaryText(scheme))
+                .padding(.horizontal, 12)
+                .frame(minWidth: 36)
+                .frame(height: 28)
                 .background(
-                    RoundedRectangle(cornerRadius: 15, style: .continuous)
-                        .fill(filter == value ? LegadoTheme.accent.opacity(0.14) : LegadoTheme.fill(scheme))
+                    RoundedRectangle(cornerRadius: 9, style: .continuous)
+                        .fill(filter == value ? LegadoTheme.card(scheme) : Color.clear)
                 )
         }
         .buttonStyle(.plain)
@@ -225,16 +221,18 @@ struct BookshelfView: View {
     private var content: some View {
         if books.isEmpty {
             emptyView
-        } else if style == 1 {
-            listView
-        } else {
+        } else if columns >= 2 {
             gridView
+        } else {
+            listView
         }
     }
 
     private var gridView: some View {
         ScrollView {
-            LazyVGrid(columns: gridColumns, spacing: 18) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 24),
+                                     count: min(max(columns, 2), 5)),
+                      spacing: 24) {
                 ForEach(books) { book in
                     Button {
                         path.append(Route.reader(book, book.durChapterIndex))
@@ -242,12 +240,12 @@ struct BookshelfView: View {
                         gridCell(book)
                     }
                     .buttonStyle(.plain)
-                    .contextMenu { menuItems(book) }
+                    .onLongPressGesture { path.append(Route.detail(book)) }
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 6)
-            .padding(.bottom, 110)
+            .padding(.horizontal, 8)
+            .padding(.top, 12)
+            .padding(.bottom, 90)
         }
     }
 
@@ -258,122 +256,120 @@ struct BookshelfView: View {
                     Button {
                         path.append(Route.reader(book, book.durChapterIndex))
                     } label: {
-                        listCell(book)
+                        listCell(book, compact: columns == 1)
                     }
                     .buttonStyle(.plain)
-                    .contextMenu { menuItems(book) }
-                    LegadoDivider()
-                        .padding(.leading, 0)
+                    .onLongPressGesture { path.append(Route.detail(book)) }
                 }
             }
-            .padding(.bottom, 110)
+            .padding(.horizontal, 8)
+            .padding(.top, 12)
+            .padding(.bottom, 90)
         }
     }
 
     private func gridCell(_ book: Book) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            ZStack(alignment: .topLeading) {
+        VStack(spacing: 6) {
+            ZStack(alignment: .topTrailing) {
                 Color.clear
                     .aspectRatio(3.0 / 4.0, contentMode: .fit)
                     .overlay(
                         RemoteImage(urlString: book.customCoverUrl ?? book.coverUrl ?? "")
                     )
                     .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 4, style: .continuous)
-                            .strokeBorder(Color.black.opacity(0.06), lineWidth: 0.5)
-                    )
-
-                if book.isLocal {
-                    Text("本地")
-                        .font(.system(size: 9, weight: .medium))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 2)
-                        .background(LegadoTheme.accent.opacity(0.85))
-                        .clipShape(RoundedRectangle(cornerRadius: 3, style: .continuous))
-                        .padding(4)
-                }
 
                 if refreshing.contains(book.bookUrl) {
                     ProgressView()
                         .progressViewStyle(.circular)
                         .tint(.white)
-                        .padding(6)
+                        .padding(5)
                         .background(Color.black.opacity(0.35))
                         .clipShape(Circle())
-                        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .center)
+                        .padding(4)
                 }
             }
+            .padding(4)
 
             Text(book.name)
                 .font(.system(size: 12))
                 .foregroundColor(LegadoTheme.primaryText(scheme))
-                .lineLimit(1)
-                .multilineTextAlignment(.leading)
-                .frame(maxWidth: .infinity, alignment: .leading)
+                .lineLimit(2)
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
         }
+        .padding(4)
     }
 
-    private func listCell(_ book: Book) -> some View {
-        HStack(spacing: 12) {
+    private func listCell(_ book: Book, compact: Bool) -> some View {
+        let coverWidth: CGFloat = compact ? 48 : 66
+        let coverHeight: CGFloat = compact ? 64 : 90
+
+        return HStack(alignment: .top, spacing: 10) {
             Color.clear
-                .frame(width: 56, height: 76)
+                .frame(width: coverWidth, height: coverHeight)
                 .overlay(RemoteImage(urlString: book.customCoverUrl ?? book.coverUrl ?? ""))
                 .clipShape(RoundedRectangle(cornerRadius: 4, style: .continuous))
 
-            VStack(alignment: .leading, spacing: 4) {
-                Text(book.name)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(LegadoTheme.primaryText(scheme))
-                    .lineLimit(1)
-                Text(book.displayAuthor)
-                    .font(.system(size: 12))
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(alignment: .firstTextBaseline, spacing: 6) {
+                    Text(book.name)
+                        .font(.system(size: 16))
+                        .foregroundColor(LegadoTheme.primaryText(scheme))
+                        .lineLimit(1)
+                    Spacer(minLength: 4)
+                    Text(updateText(book))
+                        .font(.system(size: 13))
+                        .foregroundColor(LegadoTheme.secondaryText(scheme))
+                        .lineLimit(1)
+                }
+
+                HStack(spacing: 4) {
+                    Image(systemName: "person")
+                        .font(.system(size: 11))
+                    Text(book.displayAuthor)
+                        .font(.system(size: 13))
+                        .lineLimit(1)
+                }
+                .foregroundColor(LegadoTheme.secondaryText(scheme))
+
+                Text(readChapter(book))
+                    .font(.system(size: 13))
                     .foregroundColor(LegadoTheme.secondaryText(scheme))
                     .lineLimit(1)
-                Text(readState(book))
-                    .font(.system(size: 12))
-                    .foregroundColor(LegadoTheme.tertiaryText(scheme))
-                    .lineLimit(1)
-            }
 
-            Spacer(minLength: 0)
+                if let latest = book.latestChapterTitle, !latest.isEmpty {
+                    Text(latest)
+                        .font(.system(size: 13))
+                        .foregroundColor(LegadoTheme.tertiaryText(scheme))
+                        .lineLimit(1)
+                }
+            }
 
             if refreshing.contains(book.bookUrl) {
                 ProgressView().tint(LegadoTheme.accent)
             }
         }
-        .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 8)
         .contentShape(Rectangle())
     }
 
-    private func readState(_ book: Book) -> String {
-        if book.totalChapterNum > 0 {
-            let index = min(book.durChapterIndex + 1, book.totalChapterNum)
-            return "读至 \(index)/\(book.totalChapterNum) 章"
-        }
-        return book.durChapterTitle ?? "未读"
+    private func updateText(_ book: Book) -> String {
+        guard book.lastCheckTime > 0 else { return "" }
+        let date = Date(timeIntervalSince1970: Double(book.lastCheckTime) / 1000)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MM-dd HH:mm"
+        return formatter.string(from: date)
     }
 
-    @ViewBuilder
-    private func menuItems(_ book: Book) -> some View {
-        Button {
-            path.append(Route.detail(book))
-        } label: {
-            Label("书籍详情", systemImage: "info.circle")
+    private func readChapter(_ book: Book) -> String {
+        if let title = book.durChapterTitle, !title.isEmpty {
+            return "已读：\(title)"
         }
-        Button {
-            refreshToc(book)
-        } label: {
-            Label("刷新目录", systemImage: "arrow.triangle.2.circlepath")
+        if book.totalChapterNum > 0 {
+            return "共 \(book.totalChapterNum) 章"
         }
-        Divider()
-        Button(role: .destructive) {
-            model.removeBook(book)
-        } label: {
-            Label("移出书架", systemImage: "trash")
-        }
+        return "未开始"
     }
 
     private var emptyView: some View {
@@ -386,8 +382,8 @@ struct BookshelfView: View {
                 .font(.system(size: 17, weight: .medium))
                 .foregroundColor(LegadoTheme.primaryText(scheme))
             Text(model.sources.isEmpty
-                 ? "导入书源之后，就能在「搜索」里找书了"
-                 : "在右上角搜索里找书，长按结果加入书架")
+                 ? "导入书源之后，就能在搜索里找书了"
+                 : "点右上角搜索找书，长按结果加入书架")
                 .font(.system(size: 13))
                 .foregroundColor(LegadoTheme.secondaryText(scheme))
                 .multilineTextAlignment(.center)
@@ -426,32 +422,9 @@ struct BookshelfView: View {
 
     // MARK: - 动作
 
-    private func setStyle(_ value: Int) {
-        style = value
-        UserDefaults.standard.set(value, forKey: "shelfStyle")
-    }
-
-    private func refreshToc(_ book: Book) {
-        guard let source = model.source(for: book) else {
-            errorMessage = "找不到这本书对应的书源"
-            return
-        }
-        refreshing.insert(book.bookUrl)
-        Task { @MainActor in
-            defer { refreshing.remove(book.bookUrl) }
-            do {
-                let result = try await BookService.refreshToc(book: book, source: source)
-                var updated = book
-                updated.totalChapterNum = result.chapters.count
-                updated.latestChapterTitle = result.chapters.last?.title
-                model.updateBook(updated)
-                toast = result.added > 0 ? "更新了 \(result.added) 章" : "目录已是最新"
-                try? await Task.sleep(nanoseconds: 1_200_000_000)
-                toast = nil
-            } catch {
-                errorMessage = error.localizedDescription
-            }
-        }
+    private func setColumns(_ value: Int) {
+        columns = value
+        UserDefaults.standard.set(value, forKey: "shelfColumns")
     }
 
     private func handlePicked(_ url: URL) {
