@@ -249,13 +249,14 @@ struct BookshelfView: View {
                                      count: min(max(columns, 2), 5)),
                       spacing: 24) {
                 ForEach(books) { book in
-                    Button {
-                        reading = ReadingTarget(book: book, index: book.durChapterIndex)
-                    } label: {
-                        gridCell(book)
-                    }
-                    .buttonStyle(.plain)
-                    .onLongPressGesture { path.append(Route.detail(book)) }
+                    gridCell(book)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            reading = ReadingTarget(book: book, index: book.durChapterIndex)
+                        }
+                        .onLongPressGesture(minimumDuration: 0.45) {
+                            path.append(Route.detail(book))
+                        }
                 }
             }
             .padding(.horizontal, 8)
@@ -268,13 +269,14 @@ struct BookshelfView: View {
         ScrollView {
             LazyVStack(spacing: 0) {
                 ForEach(books) { book in
-                    Button {
-                        reading = ReadingTarget(book: book, index: book.durChapterIndex)
-                    } label: {
-                        listCell(book, compact: columns == 1)
-                    }
-                    .buttonStyle(.plain)
-                    .onLongPressGesture { path.append(Route.detail(book)) }
+                    listCell(book, compact: columns == 1)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            reading = ReadingTarget(book: book, index: book.durChapterIndex)
+                        }
+                        .onLongPressGesture(minimumDuration: 0.45) {
+                            path.append(Route.detail(book))
+                        }
                 }
             }
             .padding(.horizontal, 8)

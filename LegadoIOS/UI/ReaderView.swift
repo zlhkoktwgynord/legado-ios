@@ -316,7 +316,7 @@ struct ReaderView: View {
         }
         .foregroundColor(textColor)
         .background(
-            Color(hex: theme.backgroundHex).opacity(0.98)
+            Color(hex: theme.backgroundHex)
                 .clipShape(RoundedCorner(radius: 10, corners: [.topLeft, .topRight]))
                 .ignoresSafeArea(edges: .bottom)
         )
