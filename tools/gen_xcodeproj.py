@@ -110,6 +110,19 @@ def build():
         for filename in files:
             file_ref(f"{directory}/{filename}", filename, "sourcecode.swift")
 
+    font_dir = os.path.join(ROOT, PROJECT_NAME, "Resources", "Fonts")
+    font_files = []
+    if os.path.isdir(font_dir):
+        font_files = sorted(f for f in os.listdir(font_dir)
+                            if f.lower().endswith((".ttf", ".otf", ".ttc")))
+    font_refs = []
+    for name in font_files:
+        font_refs.append(project.add("PBXFileReference", f"Fonts/{name}", {
+            "lastKnownFileType": "file",
+            "path": name,
+            "sourceTree": "<group>",
+        }))
+
     asset_ref = project.add("PBXFileReference", "Assets.xcassets", {
         "lastKnownFileType": "folder.assetcatalog",
         "path": "Assets.xcassets",
@@ -148,7 +161,9 @@ def build():
     app_group = make_group("App", app_children, "App")
     core_group = make_group("Core", core_children, "Core")
     models_group = make_group("Models", model_children, "Models")
-    resources_group = make_group("Resources", [asset_ref, info_ref], "Resources")
+    fonts_group = make_group("Fonts", font_refs, "Fonts") if font_files else None
+    resources_children = [asset_ref, info_ref] + ([fonts_group] if fonts_group else [])
+    resources_group = make_group("Resources", resources_children, "Resources")
     soup_group = make_group("SwiftSoup", soup_children, "SwiftSoup")
     vendor_group = make_group("Vendor", [soup_group], "Vendor")
     app_root_group = make_group(PROJECT_NAME,
@@ -168,6 +183,8 @@ def build():
             source_build_files.append(build_file)
 
     asset_build_file = project.add("PBXBuildFile", "build:assets", {"fileRef": asset_ref})
+    font_build_files = [project.add("PBXBuildFile", f"build:font:{name}", {"fileRef": ref})
+                        for name, ref in zip(font_files, font_refs)]
 
     # ---------- 编译阶段 ----------
     sources_phase = project.add("PBXSourcesBuildPhase", "sources", {
@@ -177,7 +194,7 @@ def build():
     })
     resources_phase = project.add("PBXResourcesBuildPhase", "resources", {
         "buildActionMask": 2147483647,
-        "files": [asset_build_file],
+        "files": [asset_build_file] + font_build_files,
         "runOnlyForDeploymentPostprocessing": 0,
     })
     frameworks_phase = project.add("PBXFrameworksBuildPhase", "frameworks", {
@@ -191,13 +208,13 @@ def build():
         "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
         "ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME": "AccentColor",
         "CODE_SIGN_STYLE": "Automatic",
-        "CURRENT_PROJECT_VERSION": "18",
+        "CURRENT_PROJECT_VERSION": "16",
         "ENABLE_PREVIEWS": "YES",
         "GENERATE_INFOPLIST_FILE": "NO",
         "INFOPLIST_FILE": f"{PROJECT_NAME}/Resources/Info.plist",
         "IPHONEOS_DEPLOYMENT_TARGET": "16.0",
         "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks"],
-        "MARKETING_VERSION": "4.2",
+        "MARKETING_VERSION": "3.2",
         "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE_ID,
         "PRODUCT_NAME": "$(TARGET_NAME)",
         "SWIFT_EMIT_LOC_STRINGS": "YES",

@@ -422,6 +422,14 @@
 			isa = PBXBuildFile;
 				fileRef = 3F48DF4F3860AD99D8ED0721;
 		};
+		3A0089CB63AFE242A544B0B9 /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 0CA816B233ACDEC415C3422A;
+		};
+		6020919A815560A18A581DCC /* PBXBuildFile */ = {
+			isa = PBXBuildFile;
+				fileRef = 96F07500E884B4B5473AF5EF;
+		};
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -1043,6 +1051,18 @@
 				path = "_Compat.swift";
 				sourceTree = "<group>";
 		};
+		0CA816B233ACDEC415C3422A /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "file";
+				path = "DroidSansMono.ttf";
+				sourceTree = "<group>";
+		};
+		96F07500E884B4B5473AF5EF /* PBXFileReference */ = {
+			isa = PBXFileReference;
+				lastKnownFileType = "file";
+				path = "Roboto-Regular.ttf";
+				sourceTree = "<group>";
+		};
 		3F48DF4F3860AD99D8ED0721 /* PBXFileReference */ = {
 			isa = PBXFileReference;
 				lastKnownFileType = "folder.assetcatalog";
@@ -1102,9 +1122,16 @@
 				path = "Models";
 				name = "Models";
 		};
+		61DD6B7B58106EC3CF1FAF5A /* PBXGroup */ = {
+			isa = PBXGroup;
+				children = (0CA816B233ACDEC415C3422A, 96F07500E884B4B5473AF5EF);
+				sourceTree = "<group>";
+				path = "Fonts";
+				name = "Fonts";
+		};
 		C02BE5792510DDEC3D13C3DC /* PBXGroup */ = {
 			isa = PBXGroup;
-				children = (3F48DF4F3860AD99D8ED0721, E11324A5BC4F0A7FA438F642);
+				children = (3F48DF4F3860AD99D8ED0721, E11324A5BC4F0A7FA438F642, 61DD6B7B58106EC3CF1FAF5A);
 				sourceTree = "<group>";
 				path = "Resources";
 				name = "Resources";
@@ -1178,7 +1205,7 @@
 		BC89074D8BD49D7C975D5B76 /* PBXResourcesBuildPhase */ = {
 			isa = PBXResourcesBuildPhase;
 				buildActionMask = 2147483647;
-				files = (B50ACB6EBA06AF96EA4D5646);
+				files = (B50ACB6EBA06AF96EA4D5646, 3A0089CB63AFE242A544B0B9, 6020919A815560A18A581DCC);
 				runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */
@@ -1205,12 +1232,12 @@
 		};
 		EC79B1BF538F037C1A3D3CA9 /* XCBuildConfiguration */ = {
 			isa = XCBuildConfiguration;
-				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "18"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "4.2"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf"; ENABLE_TESTABILITY = "YES"; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); ONLY_ACTIVE_ARCH = "YES"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; };
+				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "16"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "3.2"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf"; ENABLE_TESTABILITY = "YES"; GCC_PREPROCESSOR_DEFINITIONS = ("DEBUG=1", "$(inherited)"); ONLY_ACTIVE_ARCH = "YES"; SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG"; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; };
 				name = "Debug";
 		};
 		238B85A8F746F8F4CE798278 /* XCBuildConfiguration */ = {
 			isa = XCBuildConfiguration;
-				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "18"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "4.2"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = "NO"; SWIFT_COMPILATION_MODE = "wholemodule"; VALIDATE_PRODUCT = "YES"; };
+				buildSettings = { ASSETCATALOG_COMPILER_APPICON_NAME = "AppIcon"; ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = "AccentColor"; CODE_SIGN_STYLE = "Automatic"; CURRENT_PROJECT_VERSION = "16"; ENABLE_PREVIEWS = "YES"; GENERATE_INFOPLIST_FILE = "NO"; INFOPLIST_FILE = "LegadoIOS/Resources/Info.plist"; IPHONEOS_DEPLOYMENT_TARGET = "16.0"; LD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks"); MARKETING_VERSION = "3.2"; PRODUCT_BUNDLE_IDENTIFIER = "com.legado.ios.reader"; PRODUCT_NAME = "$(TARGET_NAME)"; SWIFT_EMIT_LOC_STRINGS = "YES"; SWIFT_VERSION = "5.0"; TARGETED_DEVICE_FAMILY = "1,2"; DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym"; ENABLE_NS_ASSERTIONS = "NO"; SWIFT_COMPILATION_MODE = "wholemodule"; VALIDATE_PRODUCT = "YES"; };
 				name = "Release";
 		};
 /* End XCBuildConfiguration section */

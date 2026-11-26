@@ -1,0 +1,7 @@
+内置字体说明
+
+Roboto-Regular.ttf  —— Roboto，Apache License 2.0，Google Inc.
+DroidSansMono.ttf   —— Droid Sans Mono，Apache License 2.0，Google Inc.
+
+这两个字体来自安卓系统/Android 开源项目，用于在 iOS 上还原安卓的拉丁字母与数字排版。
+许可证全文：https://www.apache.org/licenses/LICENSE-2.0

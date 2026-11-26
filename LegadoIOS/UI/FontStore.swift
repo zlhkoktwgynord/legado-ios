@@ -12,7 +12,17 @@ enum FontStore {
         return dir
     }
 
+    /// 注册 App 内置字体（Roboto 等，Apache-2.0）
+    static func registerBundled() {
+        let names = ["Roboto-Regular", "DroidSansMono"]
+        for name in names {
+            guard let url = Bundle.main.url(forResource: name, withExtension: "ttf") else { continue }
+            CTFontManagerRegisterFontsForURL(url as CFURL, .process, nil)
+        }
+    }
+
     static func registerAll() {
+        registerBundled()
         guard let files = try? FileManager.default.contentsOfDirectory(
             at: directory, includingPropertiesForKeys: nil) else { return }
         for url in files where ["ttf", "otf", "ttc"].contains(url.pathExtension.lowercased()) {

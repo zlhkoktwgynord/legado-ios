@@ -60,6 +60,8 @@ struct ReaderStylePanel: View {
 
             Menu {
                 Button("系统") { model.readerConfig.fontFamily = "" }
+                Button("Roboto（原版）") { model.readerConfig.fontFamily = "Roboto" }
+                Button("等宽（原版）") { model.readerConfig.fontFamily = "DroidSansMono" }
                 Button("宋体") { model.readerConfig.fontFamily = "Songti SC" }
                 Button("黑体") { model.readerConfig.fontFamily = "PingFang SC" }
                 Button("楷体") { model.readerConfig.fontFamily = "Kaiti SC" }
