@@ -32,9 +32,12 @@ struct ReaderStylePanel: View {
             .padding(.bottom, 16)
         }
         .onChange(of: model.readerConfig) { _ in model.saveReaderConfig() }
-        .sheet(isPresented: $showFontImporter) {
-            DocumentPicker(contentTypes: [.font]) { url in
-                showFontImporter = false
+        .fileImporter(isPresented: $showFontImporter,
+                      allowedContentTypes: [.font],
+                      allowsMultipleSelection: false) { result in
+            if case .success(let urls) = result, let url = urls.first {
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
                 if let name = FontStore.importFont(from: url) {
                     model.readerConfig.fontFamily = name
                     fontTick += 1
