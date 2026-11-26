@@ -32,6 +32,12 @@ final class AppModel: ObservableObject {
         books = Storage.loadJSON([Book].self, booksFile) ?? []
         recentKeywords = Storage.loadJSON([String].self, recentFile) ?? []
         readerConfig = Storage.loadReaderConfig()
+        // 一次性迁移：把字体恢复成 iOS 默认，避免沿用之前选过的 Roboto
+        if !UserDefaults.standard.bool(forKey: "fontMigratedToSystem") {
+            readerConfig.fontFamily = ""
+            Storage.saveReaderConfig(readerConfig)
+            UserDefaults.standard.set(true, forKey: "fontMigratedToSystem")
+        }
         if let saved = Storage.loadJSON([ReplaceRule].self, replaceFile) {
             replaceRules = saved
         } else {

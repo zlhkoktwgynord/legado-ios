@@ -59,7 +59,7 @@ struct ReaderStylePanel: View {
             }
 
             Menu {
-                Button("系统") { model.readerConfig.fontFamily = "" }
+                Button("iOS 默认（苹方）") { model.readerConfig.fontFamily = "" }
                 Button("Roboto（原版）") { model.readerConfig.fontFamily = "Roboto" }
                 Button("等宽（原版）") { model.readerConfig.fontFamily = "DroidSansMono" }
                 Button("宋体") { model.readerConfig.fontFamily = "Songti SC" }
