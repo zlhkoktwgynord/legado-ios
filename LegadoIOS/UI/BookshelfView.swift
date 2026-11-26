@@ -1,4 +1,8 @@
 import SwiftUI
+import UniformTypeIdentifiers
+#if canImport(UIKit)
+import UIKit
+#endif
 
 /// 书架：24sp 大标题 + 38pt 分组标签栏 + 列表 / 网格（1~5 列）
 struct BookshelfView: View {
@@ -8,6 +12,7 @@ struct BookshelfView: View {
     var onSearch: () -> Void = {}
 
     @State private var path = NavigationPath()
+    @State private var reading: ReadingTarget?
     /// 0 列表 1 紧凑列表 2~5 网格列数
     @State private var columns: Int = UserDefaults.standard.integer(forKey: "shelfColumns")
     @State private var filter: Int = 0
@@ -54,15 +59,19 @@ struct BookshelfView: View {
                 Text(errorMessage ?? "")
             }
         }
+        .readerCover($reading)
         .sheet(isPresented: $showSettings) { SettingsView() }
         .sheet(isPresented: $showSourceImport) { SourceImportView() }
         .sheet(isPresented: $showSourceList) { SourceListView() }
-        .sheet(isPresented: $showImporter) {
-            DocumentPicker { url in
-                showImporter = false
-                handlePicked(url)
+        .fileImporter(isPresented: $showImporter,
+                      allowedContentTypes: [.plainText, .text, .data],
+                      allowsMultipleSelection: false) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first { handlePicked(url) }
+            case .failure(let error):
+                errorMessage = "选择文件失败：\(error.localizedDescription)"
             }
-            .ignoresSafeArea()
         }
     }
 
@@ -114,6 +123,11 @@ struct BookshelfView: View {
                     showImporter = true
                 } label: {
                     Label("添加本地书籍", systemImage: "doc.badge.plus")
+                }
+                Button {
+                    importFromClipboard()
+                } label: {
+                    Label("从剪贴板导入 TXT", systemImage: "doc.on.clipboard")
                 }
                 Button {
                     showSourceImport = true
@@ -236,7 +250,7 @@ struct BookshelfView: View {
                       spacing: 24) {
                 ForEach(books) { book in
                     Button {
-                        path.append(Route.reader(book, book.durChapterIndex))
+                        reading = ReadingTarget(book: book, index: book.durChapterIndex)
                     } label: {
                         gridCell(book)
                     }
@@ -255,7 +269,7 @@ struct BookshelfView: View {
             LazyVStack(spacing: 0) {
                 ForEach(books) { book in
                     Button {
-                        path.append(Route.reader(book, book.durChapterIndex))
+                        reading = ReadingTarget(book: book, index: book.durChapterIndex)
                     } label: {
                         listCell(book, compact: columns == 1)
                     }
@@ -428,13 +442,35 @@ struct BookshelfView: View {
         guard ProcessInfo.processInfo.environment["LEGADO_SCREEN"] == "reader",
               path.isEmpty,
               let book = model.sortedBooks.first else { return }
-        path.append(Route.reader(book, book.durChapterIndex))
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+            reading = ReadingTarget(book: book, index: book.durChapterIndex)
+        }
         #endif
     }
 
     private func setColumns(_ value: Int) {
         columns = value
         UserDefaults.standard.set(value, forKey: "shelfColumns")
+    }
+
+    private func importFromClipboard() {
+        let text = UIPasteboard.general.string ?? ""
+        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            errorMessage = "剪贴板里没有文字"
+            return
+        }
+        Task { @MainActor in
+            do {
+                let data = Data(text.utf8)
+                let imported = try await Task.detached(priority: .userInitiated) {
+                    try LocalBookImporter.load(data: data, fileName: "剪贴板导入.txt")
+                }.value
+                let book = model.addLocalBook(imported)
+                reading = ReadingTarget(book: book, index: 0)
+            } catch {
+                errorMessage = "导入失败：\(error.localizedDescription)"
+            }
+        }
     }
 
     private func handlePicked(_ url: URL) {
@@ -444,7 +480,9 @@ struct BookshelfView: View {
             errorMessage = "目前只支持 TXT 文件（选中的是 .\(ext)）"
             return
         }
+        let scoped = url.startAccessingSecurityScopedResource()
         Task { @MainActor in
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             do {
                 let data = try Data(contentsOf: url)
                 guard !data.isEmpty else {
@@ -456,7 +494,7 @@ struct BookshelfView: View {
                 }.value
                 let book = model.addLocalBook(imported)
                 try? await Task.sleep(nanoseconds: 300_000_000)
-                path.append(Route.reader(book, 0))
+                reading = ReadingTarget(book: book, index: 0)
             } catch {
                 errorMessage = "导入失败：\(error.localizedDescription)"
             }

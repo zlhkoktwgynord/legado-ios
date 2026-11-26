@@ -46,8 +46,8 @@ struct ReaderView: View {
             ZStack(alignment: .bottom) {
                 Color(hex: theme.backgroundHex).ignoresSafeArea()
 
-                pageLayer
-                    .frame(width: width, height: height)
+                pageLayer(width: width, height: height)
+                    .frame(width: geo.size.width, height: height)
                     .position(x: geo.size.width / 2, y: geo.size.height / 2)
                     .gesture(tapGesture(width: width))
                     .simultaneousGesture(swipeGesture)
@@ -77,6 +77,7 @@ struct ReaderView: View {
             .onChange(of: config) { _ in rebuild() }
         }
         .statusBarHidden(true)
+        .persistentSystemOverlays(.hidden)
         .navigationBarBackButtonHidden(true)
         .toolbar(.hidden, for: .navigationBar)
         .toolbar(.hidden, for: .tabBar)
@@ -115,25 +116,39 @@ struct ReaderView: View {
 
     // MARK: - 页面
 
-    private var pageLayer: some View {
+    /// 每一页都自带不透明底色，翻页时整页跟着动，而不是只有文字在动
+    private func pageView(_ index: Int, width: CGFloat, height: CGFloat) -> some View {
+        ZStack {
+            Color(hex: theme.backgroundHex)
+            if let paginator = paginator {
+                TextKitPageView(paginator: paginator, index: index)
+                    .frame(width: width, height: height)
+            }
+        }
+        .frame(width: width + CGFloat(config.padding) * 2, height: height)
+    }
+
+    private func pageLayer(width: CGFloat, height: CGFloat) -> some View {
         ZStack(alignment: .topLeading) {
             if loading && content.isEmpty {
-                ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
+                ProgressView()
+                    .frame(width: width, height: height)
             } else if let error = error, content.isEmpty {
                 VStack(spacing: 12) {
                     ErrorBanner(message: error)
                     Button("重试") { loadContent(index: currentIndex) }
                 }
-                .padding()
-            } else if let paginator = paginator, pageCount > 0 {
-                TextKitPageView(paginator: paginator, index: pageIndex)
+                .frame(width: width, height: height)
+            } else if paginator != nil, pageCount > 0 {
+                pageView(pageIndex, width: width, height: height)
                     .offset(x: baseX)
                 if let overlay = overlayIndex {
-                    TextKitPageView(paginator: paginator, index: overlay)
+                    pageView(overlay, width: width, height: height)
                         .offset(x: overlayX)
                 }
             }
         }
+        .frame(width: width + CGFloat(config.padding) * 2, height: height, alignment: .topLeading)
         .clipped()
     }
 

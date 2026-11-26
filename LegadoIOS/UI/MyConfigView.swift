@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 /// 「我的」页：40pt 搜索框 + 四组卡片式设置（无图标，行高 60pt）
 struct MyConfigView: View {
@@ -63,12 +64,12 @@ struct MyConfigView: View {
             case .settings: SettingsView()
             }
         }
-        .sheet(isPresented: $showImporter) {
-            DocumentPicker { url in
-                showImporter = false
+        .fileImporter(isPresented: $showImporter,
+                      allowedContentTypes: [.plainText, .text, .data],
+                      allowsMultipleSelection: false) { result in
+            if case .success(let urls) = result, let url = urls.first {
                 importLocal(url)
             }
-            .ignoresSafeArea()
         }
         .confirmationDialog("清空已缓存的章节正文？", isPresented: $showClearCache, titleVisibility: .visible) {
             Button("清空", role: .destructive) {
@@ -238,7 +239,9 @@ struct MyConfigView: View {
 
     private func importLocal(_ url: URL) {
         let name = url.lastPathComponent
+        let scoped = url.startAccessingSecurityScopedResource()
         Task { @MainActor in
+            defer { if scoped { url.stopAccessingSecurityScopedResource() } }
             do {
                 let data = try Data(contentsOf: url)
                 let imported = try await Task.detached(priority: .userInitiated) {

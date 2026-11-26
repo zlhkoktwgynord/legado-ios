@@ -3,8 +3,23 @@ import SwiftUI
 enum Route: Hashable {
     case detail(Book)
     case searchBook(SearchBook)
-    case reader(Book, Int)
     case sourceDetail(BookSource)
+}
+
+/// 阅读器以全屏方式弹出（不走导航栈，避免右滑把阅读页 pop 掉，也方便隐藏状态栏）
+struct ReadingTarget: Identifiable {
+    var book: Book
+    var index: Int
+
+    var id: String { "\(book.bookUrl)#\(index)" }
+}
+
+extension View {
+    func readerCover(_ target: Binding<ReadingTarget?>) -> some View {
+        fullScreenCover(item: target) { item in
+            ReaderView(book: item.book, startIndex: item.index)
+        }
+    }
 }
 
 /// 主界面外壳：照搬安卓版「阅读」
@@ -216,8 +231,6 @@ struct RouteView: View {
             BookDetailView(book: book)
         case .searchBook(let searchBook):
             BookDetailView(searchBook: searchBook)
-        case .reader(let book, let index):
-            ReaderView(book: book, startIndex: index)
         case .sourceDetail(let source):
             SourceDetailView(source: source)
         }

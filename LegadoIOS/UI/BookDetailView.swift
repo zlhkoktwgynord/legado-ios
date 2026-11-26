@@ -14,6 +14,7 @@ struct BookDetailView: View {
     @State private var caching = false
     @State private var cacheProgress: Double = 0
     @State private var cachedCount = 0
+    @State private var reading: ReadingTarget?
 
     init(book: Book) {
         self.searchBookValue = nil
@@ -79,6 +80,7 @@ struct BookDetailView: View {
                 .disabled(loading)
             }
         }
+        .readerCover($reading)
         .onAppear {
             load(force: false)
             cachedCount = CacheService.cachedCount(book)
@@ -131,7 +133,9 @@ struct BookDetailView: View {
     private var actionRow: some View {
         HStack(spacing: 10) {
             if model.isOnShelf(book.bookUrl) {
-                NavigationLink(value: Route.reader(book, book.durChapterIndex)) {
+                Button {
+                    reading = ReadingTarget(book: book, index: book.durChapterIndex)
+                } label: {
                     Text(chapters.isEmpty ? "开始阅读" : "继续阅读")
                         .font(.subheadline.weight(.medium))
                         .frame(maxWidth: .infinity)
@@ -140,6 +144,7 @@ struct BookDetailView: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
+                .buttonStyle(.plain)
                 Button {
                     model.removeBook(book)
                 } label: {
@@ -164,7 +169,9 @@ struct BookDetailView: View {
                         .foregroundColor(.white)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
-                NavigationLink(value: Route.reader(book, 0)) {
+                Button {
+                    reading = ReadingTarget(book: book, index: 0)
+                } label: {
                     Text("试读")
                         .font(.subheadline)
                         .frame(width: 70)
@@ -173,6 +180,7 @@ struct BookDetailView: View {
                         .foregroundColor(.primary)
                         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
                 }
+                .buttonStyle(.plain)
             }
         }
     }
@@ -206,7 +214,9 @@ struct BookDetailView: View {
                 let shown = showAllChapters ? chapters : Array(chapters.prefix(30))
                 VStack(spacing: 0) {
                     ForEach(shown) { chapter in
-                        NavigationLink(value: Route.reader(book, chapter.index)) {
+                        Button {
+                            reading = ReadingTarget(book: book, index: chapter.index)
+                        } label: {
                             HStack {
                                 Text(chapter.title)
                                     .font(.subheadline)
